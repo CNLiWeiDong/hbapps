@@ -1,0 +1,4 @@
+add_subdirectory(monitor)
+add_subdirectory(trader)
+add_subdirectory(monitor_mail)
+add_subdirectory(log_server)

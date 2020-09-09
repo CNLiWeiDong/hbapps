@@ -1,0 +1,12 @@
+automake,-x,/usr/local/bin/automake,automake,http://ftp.gnu.org/gnu/automake/automake-1.15.tar.gz
+Libtool,-x,/usr/local/bin/glibtool,libtool,http://gnu.askapache.com/libtool/libtool-2.4.6.tar.gz
+OpenSSL,-f,/usr/local/opt/openssl/lib/libssl.a,openssl,https://www.openssl.org/source/openssl-1.0.2n.tar.gz
+llvm,-x,/usr/local/opt/llvm@4/bin/clang-4.0,llvm@4,http://releases.llvm.org/5.0.1/llvm-5.0.1.src.tar.xz
+wget,-x,/usr/local/bin/wget,wget,https://ftp.gnu.org/gnu/wget/wget-1.19.2.tar.gz
+CMake,-x,/usr/local/bin/cmake,cmake,https://cmake.org/files/v3.10/cmake-3.10.1-Darwin-x86_64.tar.gz
+GMP,-f,/usr/local/opt/gmp/include/gmpxx.h,gmp,https://ftp.gnu.org/gnu/gmp/gmp-6.1.2.tar.bz2
+LCOV,-f,/usr/local/bin/lcov,lcov,http://downloads.sourceforge.net/ltp/lcov-1.13.tar.gz
+Jsoncpp,-f,/usr/local/lib/libjsoncpp_static.a,jsoncpp,https://homebrew.bintray.com/bottles/jsoncpp-1.8.4.mojave.bottle.tar.gz
+Protobuf,-x,/usr/local/bin/protoc,protobuf,https://homebrew.bintray.com/bottles/protobuf-3.7.1.mojave.bottle.1.tar.gz
+Pkg-config,-x,/usr/local/bin/pkg-config,pkg-config,https://homebrew.bintray.com/bottles/pkg-config-0.29.2.mojave.bottle.tar.gz
+Log4cplus,-f,/usr/local/include/log4cplus/log4cplus.h,log4cplus,https://homebrew.bintray.com/bottles/log4cplus-2.0.2.mojave.bottle.tar.gz
