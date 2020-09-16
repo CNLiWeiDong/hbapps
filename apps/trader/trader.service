@@ -1,0 +1,13 @@
+[Unit]
+Description=trader
+
+[Service]
+ExecStart=/root/trader/trader --secret-key-password $pwd
+WorkingDirectory=/root/trader/
+Restart=always
+User=root
+#ExecReload=/bin/kill -SIGHUP $MAINPID
+#ExecStop=/bin/kill -SIGINT $MAINPID
+
+[Install]
+WantedBy=multi-user.target

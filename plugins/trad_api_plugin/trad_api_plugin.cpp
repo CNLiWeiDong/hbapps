@@ -4,6 +4,7 @@
 #include <boost/algorithm/string/regex.hpp>
 #include <stdlib.h>
 #include <set>
+#include <fc/crypto/aes.hpp>
 
 namespace hb{ namespace plugin{
         static appbase::abstract_plugin& _trad_api_plugin = app().register_plugin<trad_api_plugin>();
@@ -53,9 +54,11 @@ namespace hb{ namespace plugin{
                         url_cancel_order: options.at( "trad-api-url-cancel-order" ).as<string>(),
                         url_new_order: options.at( "trad-api-url-new-order" ).as<string>()
                 };
-                const string pwd_of_secret_key = options.at( "secret-key-password" ).as<string>();
-                cout << pwd_of_secret_key;
                 log_info<<"trad_api_plugin::plugin_initialize2";
+                const string pw_of_secret_key = options.at( "secret-key-password" ).as<string>();
+                if (pw_of_secret_key!="no") {
+                        data.secret_key = fc::crypto::cfb_aes_decrypt(pw_of_secret_key, data.secret_key);
+                }
                 my->data(std::move(data));
                 log_info<<"trad_api_plugin::plugin_initialize [end]";
                 

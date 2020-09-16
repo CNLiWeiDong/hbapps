@@ -2,15 +2,10 @@
 #include <boost/test/unit_test.hpp>
 #include <fc/compress/zlib.hpp>
 #include <fc/crypto/aes.hpp>
-#include <fc/crypto/base58.hpp>
-#include <fc/crypto/base64.hpp>
+#include <fc/crypto/base.hpp>
 #include <fc/crypto/hex.hpp>
 #include <fc/crypto/md5.hpp>
-#include <fc/crypto/rand.hpp>
-#include <fc/crypto/ripemd160.hpp>
-#include <fc/crypto/sha1.hpp>
-#include <fc/crypto/sha256.hpp>
-#include <fc/crypto/sha512.hpp>
+#include <fc/crypto/sha.hpp>
 #include <fc/crypto/rsa.hpp>
 #include <fc/logging/logging.h>
 #include <fc/http/http.h>
@@ -19,7 +14,7 @@
 #include <iostream>
 #include <string>
 
-using namespace fc;
+using namespace fc::crypto;
 
 BOOST_AUTO_TEST_SUITE(cypher_suites)
 // test_log
@@ -92,30 +87,13 @@ BOOST_AUTO_TEST_CASE(test_aes) try {
       "567890123456789012345678901234567890123456789012345678901234567890123456"
       "789012345678901234567890123456789012345678901234567890123456789012345678"
       "901234567890");
-  fc::bytes source(source_str.begin(), source_str.end());
-  fc::sha512 key("123456");
-  auto encrypt_data = fc::aes_encrypt(key, source);
-  auto decrypt_data = fc::aes_decrypt(key, encrypt_data);
+
+  auto encrypt_data = cfb_aes_encrypt(sha512("123456"), source_str);
+  auto decrypt_data = cfb_aes_decrypt(sha512("123456"), encrypt_data);
   BOOST_CHECK_EQUAL(source_str,
-                    string(decrypt_data.begin(), decrypt_data.end()));
+                    decrypt_data);
 } catch (...) {
   log_error<<"test_aes error!";
-};
-// test_base58
-BOOST_AUTO_TEST_CASE(test_base58) try {
-  std::string source_str(
-      "123456789012345678901234567890123456789012345678901234567890123456789012"
-      "345678901234567890123456789012345678901234567890123456789012345678901234"
-      "567890123456789012345678901234567890123456789012345678901234567890123456"
-      "789012345678901234567890123456789012345678901234567890123456789012345678"
-      "901234567890");
-  fc::bytes source(source_str.begin(), source_str.end());
-  auto encrypt_data = fc::to_base58(source);
-  auto decrypt_data = fc::from_base58(encrypt_data);
-  BOOST_CHECK_EQUAL(source_str,
-                    string(decrypt_data.begin(), decrypt_data.end()));
-} catch (...) {
-  log_error<<"test_base58 error!";
 };
 // test_base64
 BOOST_AUTO_TEST_CASE(test_base64) try {
@@ -125,8 +103,8 @@ BOOST_AUTO_TEST_CASE(test_base64) try {
       "567890123456789012345678901234567890123456789012345678901234567890123456"
       "789012345678901234567890123456789012345678901234567890123456789012345678"
       "901234567890");
-  auto encrypt_data = fc::base64_encode(source_str);
-  auto decrypt_data = fc::base64_decode(encrypt_data);
+  auto encrypt_data = base64(source_str);
+  auto decrypt_data = base64_str(encrypt_data);
   BOOST_CHECK_EQUAL(source_str, decrypt_data);
 } catch (...) {
   log_error<<"test_base64 error!";
@@ -139,9 +117,8 @@ BOOST_AUTO_TEST_CASE(test_hex) try {
       "567890123456789012345678901234567890123456789012345678901234567890123456"
       "789012345678901234567890123456789012345678901234567890123456789012345678"
       "901234567890");
-  fc::bytes source(source_str.begin(), source_str.end());
-  auto encrypt_data = fc::to_hex(source);
-  auto decrypt_data = fc::from_hex(encrypt_data);
+  auto encrypt_data = hex(source_str);
+  auto decrypt_data = hex_str(encrypt_data);
   BOOST_CHECK_EQUAL(source_str,
                     string(decrypt_data.begin(), decrypt_data.end()));
 } catch (...) {
@@ -156,76 +133,58 @@ BOOST_AUTO_TEST_CASE(test_md5) try {
       "567890123456789012345678901234567890123456789012345678901234567890123456"
       "789012345678901234567890123456789012345678901234567890123456789012345678"
       "901234567890");
-  auto md5_str1 = fc::md5(source_str1);
-  auto md5_str2 = fc::md5(source_str2);
+  auto md5_str1 = md5(source_str1);
+  auto md5_str2 = md5(source_str2);
   BOOST_CHECK_EQUAL(true, md5_str1 != md5_str2);
 } catch (...) {
   log_error<<"test_md5 error!";
 };
-// test_rand
-BOOST_AUTO_TEST_CASE(test_rand) try {
-  uint32_t rand = 0;
-  fc::rand_bytes((char *)&rand, sizeof(rand));
-  BOOST_CHECK_EQUAL(true, rand > 0);
-} catch (...) {
-  log_error<<"test_rand error!";
-};
-// test_ripemd160
-BOOST_AUTO_TEST_CASE(test_ripemd160) try {
-        fc::ripemd160 h = fc::ripemd160::hash("123456");
-        fc::ripemd160 h2 = fc::ripemd160::hash("1234567");
-        BOOST_CHECK_EQUAL(true, h.str() != h2.str());
-} catch (...) {
-  log_error<<"test_ripemd160 error!";
-};
+
 // test_sha1
 BOOST_AUTO_TEST_CASE(test_sha1) try {
-  BOOST_CHECK_EQUAL(true, fc::sha1::hash("123456").str() != fc::sha1::hash("1234567").str());
+  BOOST_CHECK_EQUAL(true, sha1("123456") != sha1("1234567"));
 } catch (...) {
   log_error<<"test_sha1 error!";
 };
 // test_sha256
 BOOST_AUTO_TEST_CASE(test_sha256) try {
-  BOOST_CHECK_EQUAL(true, fc::sha256::hash("123456").str() != fc::sha256::hash("1234567").str());
+  BOOST_CHECK_EQUAL(true, sha256("123456") != sha256("1234567"));
 } catch (...) {
   log_error<<"test_sha256 error!";
 };
 // test_sha512
 BOOST_AUTO_TEST_CASE(test_sha512) try {
-  BOOST_CHECK_EQUAL(true, fc::sha512::hash("123456").str() != fc::sha512::hash("1234567").str());
+  BOOST_CHECK_EQUAL(true, sha512("123456") != sha512("1234567"));
 } catch (...) {
   log_error<<"test_sha512 error!";
 };
+
 // test_rsa
 BOOST_AUTO_TEST_CASE(test_rsa) try {
-    string public_key = "-----BEGIN PUBLIC KEY-----\n"
-                        "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDGLfoaAtYKlxhGMclJ1764wkak\n"
-                        "/h6M2xuLb+ehowq+L7cWj3egu6GcmigPQniJZwxRGEXsccuhDZMFvk462mgaG5nM\n"
-                        "Wcj7XOOgNZ9OGorySQHRQnjGkIsxTQ5lg9mWryhBejpx/CbNdSXkOuSVknbWSyr5\n"
-                        "3UhcMa3n9e09/4ssvQIDAQAB\n"
-                        "-----END PUBLIC KEY-----";
-    string private_key = "-----BEGIN RSA PRIVATE KEY-----\n"
-                         "MIICXAIBAAKBgQDGLfoaAtYKlxhGMclJ1764wkak/h6M2xuLb+ehowq+L7cWj3eg\n"
-                         "u6GcmigPQniJZwxRGEXsccuhDZMFvk462mgaG5nMWcj7XOOgNZ9OGorySQHRQnjG\n"
-                         "kIsxTQ5lg9mWryhBejpx/CbNdSXkOuSVknbWSyr53UhcMa3n9e09/4ssvQIDAQAB\n"
-                         "AoGAbnI5LD3gY86JLLWaZJjkJbu/+zvUctO5qiAXizF+TzfwZZZXKTDohIo1QSve\n"
-                         "WVUgvCE29usEfSE/irfgiVQnJ0n86tFEEkjlKaJ4EkQGPvXm6VUHA7RSeZix31/m\n"
-                         "xoGgeiV4xONBtXZQO7/uFP0dYvcuTP0OaF2mtXd4Qm8GKNECQQDyCQ8BvZOGX2Y6\n"
-                         "9NuRtDlpri3p18aKBUaKlkRObIjzNS0gsPBcWp92aTbVWofN50M9ZEk/xddiAVYV\n"
-                         "7PFBEJGHAkEA0Z0ncj0BTV3TtIHC8S++pZYzplfgSwArjrfFkszPGR8ZIVwggY5h\n"
-                         "6xJXjFQpVUvBAF2qHYcw3rVEbF375GhwmwJBALJcyppVwmm70/KOj2CIl+axXVR+\n"
-                         "lukPijSHGD9S7HmOLntw6TCl9+2jC62e0YWDb6HGTdSZT2gB5Ba0TfXM5/ECQCpX\n"
-                         "Kj6jH/42s6rEg1IgqMvd2TUCjyXXNPUxHdGXWUXjyDm62D4TOqg3HkQUQ/0cvjGK\n"
-                         "ufAY/MAfsWCKY3Uxu30CQCxPEvxI2Z+wUH8sy1IA53Rbvn+d1ztp3tjb8bDGaz4Y\n"
-                         "Z4UDrjuzWzYCbNaFderi3hjfy+cgxRGiHadJE9K6zf0=\n"
-                         "-----END RSA PRIVATE KEY-----";
-        auto e = fc::rsa_pub_encrypt("abcd",public_key);
-        auto d = fc::rsa_pri_decrypt(e,private_key,"123456");
-        log_info<<"log test "<<d;
-  BOOST_CHECK_EQUAL(true, true);
+  std::string strPri, strPub;
+  create_rsa_key(strPri, strPub);
+  std::string chiper = rsa_encrypt(strPub, "test");
+  BOOST_CHECK_EQUAL(rsa_decrypt(strPri,chiper), "test");
+  std::string sig = sign_msg(strPri, "1234");
+  verify_msg(strPub, "1234", sig);
+
 } catch (...) {
   log_error<<"test_rsa error!";
 };
+
+// test_pem
+BOOST_AUTO_TEST_CASE(test_pem) try {
+  std::string strPri, strPub;
+  create_rsa_key(strPri, strPub);
+  sava_rsa_pem_pri("test_rsa_pri.pem", strPri, "123456");
+  BOOST_CHECK_EQUAL(read_rsa_pem_pri("test_rsa_pri.pem","123456"), strPri);
+
+  sava_rsa_pem_pub("test_rsa_pub.pem", strPub);
+  BOOST_CHECK_EQUAL(read_rsa_pem_pub("test_rsa_pub.pem"), strPub);
+} catch (...) {
+  log_error<<"test_pem error!";
+};
+
 // test_http_get
 BOOST_AUTO_TEST_CASE(test_http_get) try {
   fc::http::http h("baidu.com","80","/");

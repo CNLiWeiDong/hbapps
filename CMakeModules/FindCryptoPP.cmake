@@ -11,11 +11,12 @@
 find_path(CryptoPP_INCLUDE_DIR
         NAMES cryptopp/aes.h
         DOC "CryptoPP include directories"
+        PATHS /usr/local/include/ /usr/include
         )
 # 查找库文件位置
 find_library(CryptoPP_LIBRARY
-        NAMES libcrypto++.a crypto++
-        PATHS /usr/local/opt/mysql++/lib /usr/opt/mysql++/lib
+        NAMES libcryptopp.a cryptopp
+        PATHS /usr/local/lib /usr/lib/x86_64-linux-gnu
         DOC "CryptoPP library"
         )
 # 同时找到头文件位置和库文件位置时给相关变量赋值
