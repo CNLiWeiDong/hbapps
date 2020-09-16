@@ -1,100 +1,141 @@
-//
-// Created by 李卫东 on 2019-08-21.
-//
-#include "openssl/rsa.h"
-#include "fc/crypto/hex.hpp"
-#include "fc/logging/logging.h"
-#include "openssl/pem.h"
-#include <fc/crypto/rsa.hpp>
-#include <string>
+#include <fc/crypto/sha.hpp>
+#include <fc/crypto/cryptopp.hpp>
 
-using namespace std;
+namespace fc { namespace crypto {
+    
+    using namespace CryptoPP;
 
-namespace fc {
+    std::string pri_to_hex(const RSA::PrivateKey &key) {
+        std::string strPri;
+        HexEncoder privString(new StringSink(strPri));
+        key.DEREncode(privString);
+        privString.MessageEnd();
+        return strPri;
+    }
+    std::string pub_to_hex(const RSA::PublicKey &key) {
+        std::string strPub;
+        HexEncoder pubString(new StringSink(strPub));
+        key.DEREncode(pubString);
+        pubString.MessageEnd();
+        return strPub;
+    }
+    RSA::PrivateKey hex_to_pri(const std::string &strPri) {
+        StringSource privString(strPri, true, new HexDecoder);
+        RSA::PrivateKey privateKey;
+        privateKey.Load(privString);
+        return privateKey;
+    }
+    RSA::PublicKey hex_to_pub(const std::string &strPub) {
+        StringSource pubString(strPub, true, new HexDecoder);
+        RSA::PublicKey publicKey;
+        publicKey.Load(pubString);
+        return publicKey;
+    }
+    void create_rsa_key(std::string &strPri, std::string &strPub)
+    {
+        AutoSeededRandomPool rng;
+        // Create Keys
+        RSA::PrivateKey privateKey;
+        privateKey.GenerateRandomWithKeySize(rng, 3072);
+        RSA::PublicKey publicKey(privateKey);
+        
+        strPri = pri_to_hex(privateKey);
+        strPub = pub_to_hex(publicKey);
+        // HexEncoder privString(new StringSink(strPri));
+        // privateKey.DEREncode(privString);
+        // privString.MessageEnd();
+        
+        // HexEncoder pubString(new StringSink(strPub));
+        // publicKey.DEREncode(pubString);
+        // pubString.MessageEnd();
+    }
 
-// 公钥加密
-std::string rsa_pub_encrypt(const std::string &clearText,
-                            const std::string &pubKey) {
-  std::string strRet;
-  BIO *keybio = BIO_new_mem_buf((unsigned char *)pubKey.c_str(), -1);
-  if (!keybio) {
-    LOG_FATAL("BIO_new_mem_buf publicKey error");
-  }
-  RSA *rsa = nullptr;
-  PEM_read_bio_RSA_PUBKEY(keybio, &rsa, NULL, NULL);
-  if (!rsa) {
-    BIO_free_all(keybio);
-    LOG_FATAL("rsa read public key error");
-  }
+    std::string rsa_encrypt(const std::string &strPub, const std::string &plainText)
+    {
+        AutoSeededRandomPool rng;
+        StringSource pubString(strPub, true, new HexDecoder);
+        RSAES_OAEP_SHA_Encryptor pub(pubString);
+        
+        std::string result;
+        StringSource(plainText, true, new PK_EncryptorFilter(rng, pub, new HexEncoder(new StringSink(result))));
+        return result;
+    }
 
-  int len = RSA_size(rsa);
-  char *encryptedText = (char *)malloc(len + 1);
-  if (!encryptedText) {
-    BIO_free_all(keybio);
-    RSA_free(rsa);
-    LOG_FATAL("malloc memory error");
-  }
-  memset(encryptedText, 0, len + 1);
+    std::string rsa_decrypt(const std::string &strPri, const std::string &cipherText)
+    {
+        AutoSeededRandomPool rng;
+        StringSource privString(strPri, true, new HexDecoder);	
+        RSAES_OAEP_SHA_Decryptor priv(privString);	
+        std::string result;	
+        StringSource(cipherText, true, new HexDecoder(new PK_DecryptorFilter(rng, priv, new StringSink(result))));	
+        return result;
+    }
 
-  // 加密函数
-  int ret = RSA_public_encrypt(
-      clearText.length(), (const unsigned char *)clearText.c_str(),
-      (unsigned char *)encryptedText, rsa, RSA_PKCS1_PADDING);
-  if (ret >= 0)
-    strRet = std::string(encryptedText, ret);
-  // 释放内存
-  free(encryptedText);
-  BIO_free_all(keybio);
-  RSA_free(rsa);
-  if (ret < 0) {
-    LOG_FATAL("rsa RSA_public_encrypt error");
-  }
-  return strRet;
-}
+    std::string sign_msg( const std::string& strPri, const std::string& msg )
+    {
+        AutoSeededRandomPool rng;
+        RSA::PrivateKey privateKey = hex_to_pri(strPri);
+        // StringSource privString(strPri, true, new HexDecoder);
+        // RSA::PrivateKey privateKey;
+        // privateKey.Load(privString);
+        RSASSA_PKCS1v15_SHA_Signer signer(privateKey);	
 
-// 私钥解密
-std::string rsa_pri_decrypt(const std::string &cipherText,
-                            const std::string &priKey, const char *PASS) {
-  std::string strRet;
+        std::string signature;
+        StringSource ss1(msg, true, 
+            new SignerFilter(rng, signer,
+                new StringSink(signature)
+        ) // SignerFilter
+        ); // StringSource
+        return signature;
+    }
 
-  BIO *keybio;
-  keybio = BIO_new_mem_buf((unsigned char *)priKey.c_str(), -1);
-  if (!keybio) {
-    LOG_FATAL("BIO_new_mem_buf privateKey error");
-  }
-  OpenSSL_add_all_algorithms(); //密钥有经过口令加密需要这个函数
-  RSA *rsa = nullptr;
-  rsa = PEM_read_bio_RSAPrivateKey(keybio, &rsa, NULL,
-                                   (char *)PASS); // (char *)PASS ???
-  if (!rsa) {
-    BIO_free_all(keybio);
-    LOG_FATAL("read private key error");
-  }
+    void verify_msg(const std::string& strPub, const std::string& msg, const std::string& sig) {
+        RSA::PublicKey publicKey = hex_to_pub(strPub);
+        // StringSource pubString(strPub, true, new HexDecoder);
+        // RSA::PublicKey publicKey;
+        // publicKey.Load(pubString);
+        
+        RSASSA_PKCS1v15_SHA_Verifier verifier(publicKey);
 
-  int len = RSA_size(rsa);
-  char *decryptedText = (char *)malloc(len + 1);
-  if (!decryptedText) {
-    BIO_free_all(keybio);
-    RSA_free(rsa);
-    LOG_FATAL("malloc memory error");
-  }
-  memset(decryptedText, 0, len + 1);
+        StringSource ss2(msg+sig, true,
+            new SignatureVerificationFilter(
+                verifier, NULL,
+                SignatureVerificationFilter::THROW_EXCEPTION
+        ) // SignatureVerificationFilter
+        ); // StringSource
+    }
+    
+    std::string read_rsa_pem_pri(const std::string &pem_path, const std::string &pass) {
+        FileSource fs(pem_path.c_str(), true);
+        RSA::PrivateKey key;
+        if(pass.size()>0)
+            PEM_Load(fs, key, pass.data(), pass.size());
+        else
+            PEM_Load(fs, key);
+        return pri_to_hex(key);
+    }
+    
+    std::string read_rsa_pem_pub(const std::string &pem_path) {
+        FileSource fs(pem_path.c_str(), true);
+        RSA::PublicKey key;
+        PEM_Load(fs, key);
+        return pub_to_hex(key);
+    }
+    
+    void sava_rsa_pem_pri(const std::string &pem_path, const std::string &strPri, const std::string &pass) {
+        AutoSeededRandomPool rng;
+        RSA::PrivateKey privateKey = hex_to_pri(strPri);
 
-  // 解密函数
-  int ret = RSA_private_decrypt(
-      cipherText.length(), (const unsigned char *)cipherText.c_str(),
-      (unsigned char *)decryptedText, rsa, RSA_PKCS1_PADDING);
-  if (ret >= 0)
-    strRet = std::string(decryptedText, ret);
+        FileSink fs(pem_path.c_str(), true);
+        if(pass.size()>0)
+            PEM_Save(fs, privateKey, rng, "AES-128-CBC", pass.data(), pass.size());
+        else
+            PEM_Save(fs, privateKey);
+    }
 
-  // 释放内存
-  free(decryptedText);
-  BIO_free_all(keybio);
-  RSA_free(rsa);
-  if (ret < 0) {
-    LOG_FATAL("RSA_private_decrypt error");
-  }
-  return strRet;
-}
-
-} // namespace fc
+    void sava_rsa_pem_pub(const std::string &pem_path, const std::string &strPub) {
+        RSA::PublicKey publicKey = hex_to_pub(strPub);
+        FileSink fs(pem_path.c_str(), true);
+        PEM_Save(fs, publicKey);
+    }
+} } // namespace fc

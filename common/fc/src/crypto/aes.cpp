@@ -1,184 +1,63 @@
 #include <fc/crypto/aes.hpp>
-#include <fc/crypto/openssl.hpp>
-#include <fc/logging/logging.h>
+#include <fc/crypto/cryptopp.hpp>
 
-#include <openssl/opensslconf.h>
-#ifndef OPENSSL_THREADS
-#error "OpenSSL must be configured to support threads"
-#endif
-#include <openssl/crypto.h>
+namespace fc { namespace crypto {
 
-#if defined(_WIN32)
-#include <windows.h>
-#endif
+    using namespace CryptoPP;
 
-#include <fstream>
-#include <functional>
-#include <mutex>
-#include <thread>
+    std::string cfb_aes_encrypt(const std::string &sKey, const std::string &plainText) 
+    {
+        std::string outstr;
+    
+        //填key
+        SecByteBlock key(AES::DEFAULT_KEYLENGTH);
+        memset(key,0x30,key.size() );
+        sKey.size()<=AES::DEFAULT_KEYLENGTH?memcpy(key,sKey.c_str(),sKey.size()):memcpy(key,sKey.c_str(),AES::DEFAULT_KEYLENGTH);
+        
+        //填iv
+        byte iv[AES::BLOCKSIZE];
+        memset(iv,0x30,AES::BLOCKSIZE);
+    
+        AES::Encryption aesEncryption((byte *)key, AES::DEFAULT_KEYLENGTH);
+    
+        CFB_Mode_ExternalCipher::Encryption cfbEncryption(aesEncryption, iv);
+    
+        StreamTransformationFilter cfbEncryptor(cfbEncryption, new HexEncoder(new StringSink(outstr)));
+        cfbEncryptor.Put((byte *)plainText.data(), plainText.size());
+        cfbEncryptor.MessageEnd();
+    
+        return outstr;
+    }
 
-namespace fc {
+    std::string cfb_aes_encrypt(const std::string &plainText) 
+    {
+        return cfb_aes_encrypt("", plainText);
+    }
 
-/** example method from wiki.opensslfoundation.com */
-unsigned aes_encrypt(unsigned char *plaintext, int plaintext_len,
-                     unsigned char *key, unsigned char *iv,
-                     unsigned char *ciphertext) {
-  evp_cipher_ctx ctx(EVP_CIPHER_CTX_new());
+    std::string cfb_aes_decrypt(const std::string &sKey, const std::string &cipherText)
+    {
+        std::string outstr;
+    
+        //填key
+        SecByteBlock key(AES::DEFAULT_KEYLENGTH);
+        memset(key,0x30,key.size() );
+        sKey.size()<=AES::DEFAULT_KEYLENGTH?memcpy(key,sKey.c_str(),sKey.size()):memcpy(key,sKey.c_str(),AES::DEFAULT_KEYLENGTH);
+        
+        //填iv
+        byte iv[AES::BLOCKSIZE];
+        memset(iv,0x30,AES::BLOCKSIZE);
+    
+        CFB_Mode<AES >::Decryption cfbDecryption((byte *)key, AES::DEFAULT_KEYLENGTH, iv);
+        
+        HexDecoder decryptor(new StreamTransformationFilter(cfbDecryption, new StringSink(outstr)));
+        decryptor.Put((byte *)cipherText.data(), cipherText.size());
+        decryptor.MessageEnd();
+    
+        return outstr;
+    }
+    std::string cfb_aes_decrypt(const std::string &cipherText)
+    {
+        return cfb_aes_decrypt("", cipherText);
+    }
 
-  int len = 0;
-  unsigned ciphertext_len = 0;
-
-  /* Create and initialise the context */
-  if (!ctx) {
-    LOG_FATAL("error allocating evp cipher context :%s",
-              ERR_error_string(ERR_get_error(), nullptr));
-  }
-
-  /* Initialise the encryption operation. IMPORTANT - ensure you use a key
-   *    and IV size appropriate for your cipher
-   *    In this example we are using 256 bit AES (i.e. a 256 bit key). The
-   *    IV size for *most* modes is the same as the block size. For AES this
-   *    is 128 bits */
-  if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv)) {
-    LOG_FATAL("error during aes 256 cbc encryption init :%s",
-              ERR_error_string(ERR_get_error(), nullptr));
-  }
-
-  /* Provide the message to be encrypted, and obtain the encrypted output.
-   *    * EVP_EncryptUpdate can be called multiple times if necessary
-   *       */
-  if (1 != EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len)) {
-    LOG_FATAL("error during aes 256 cbc encryption update :%s",
-              ERR_error_string(ERR_get_error(), nullptr));
-  }
-  ciphertext_len = len;
-
-  /* Finalise the encryption. Further ciphertext bytes may be written at
-   *    * this stage.
-   *       */
-  if (1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len)) {
-    LOG_FATAL("error during aes 256 cbc encryption final :%s",
-              ERR_error_string(ERR_get_error(), nullptr));
-  }
-  ciphertext_len += len;
-
-  return ciphertext_len;
-}
-
-unsigned aes_decrypt(unsigned char *ciphertext, int ciphertext_len,
-                     unsigned char *key, unsigned char *iv,
-                     unsigned char *plaintext) {
-  evp_cipher_ctx ctx(EVP_CIPHER_CTX_new());
-  int len = 0;
-  unsigned plaintext_len = 0;
-
-  /* Create and initialise the context */
-  if (!ctx) {
-    LOG_FATAL("error allocating evp cipher context :%s",
-              ERR_error_string(ERR_get_error(), nullptr));
-  }
-
-  /* Initialise the decryption operation. IMPORTANT - ensure you use a key
-   *    * and IV size appropriate for your cipher
-   *       * In this example we are using 256 bit AES (i.e. a 256 bit key). The
-   *          * IV size for *most* modes is the same as the block size. For AES
-   * this
-   *             * is 128 bits */
-  if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv)) {
-    LOG_FATAL("error during aes 256 cbc decrypt init :%s",
-              ERR_error_string(ERR_get_error(), nullptr));
-  }
-
-  /* Provide the message to be decrypted, and obtain the plaintext output.
-   *    * EVP_DecryptUpdate can be called multiple times if necessary
-   *       */
-  if (1 !=
-      EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len)) {
-    LOG_FATAL("error during aes 256 cbc decrypt update :%s",
-              ERR_error_string(ERR_get_error(), nullptr));
-  }
-
-  plaintext_len = len;
-
-  /* Finalise the decryption. Further plaintext bytes may be written at
-   *    * this stage.
-   *       */
-  if (1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len)) {
-    LOG_FATAL("error during aes 256 cbc decrypt final :%s",
-              ERR_error_string(ERR_get_error(), nullptr));
-  }
-  plaintext_len += len;
-
-  return plaintext_len;
-}
-
-unsigned aes_cfb_decrypt(unsigned char *ciphertext, int ciphertext_len,
-                         unsigned char *key, unsigned char *iv,
-                         unsigned char *plaintext) {
-  evp_cipher_ctx ctx(EVP_CIPHER_CTX_new());
-  int len = 0;
-  unsigned plaintext_len = 0;
-
-  /* Create and initialise the context */
-  if (!ctx) {
-    LOG_FATAL("error allocating evp cipher context :%s",
-              ERR_error_string(ERR_get_error(), nullptr));
-  }
-
-  /* Initialise the decryption operation. IMPORTANT - ensure you use a key
-   *    * and IV size appropriate for your cipher
-   *       * In this example we are using 256 bit AES (i.e. a 256 bit key). The
-   *          * IV size for *most* modes is the same as the block size. For AES
-   * this
-   *             * is 128 bits */
-  if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cfb128(), NULL, key, iv)) {
-    LOG_FATAL("error during aes 256 cbc decrypt init :%s",
-              ERR_error_string(ERR_get_error(), nullptr));
-  }
-
-  /* Provide the message to be decrypted, and obtain the plaintext output.
-   *    * EVP_DecryptUpdate can be called multiple times if necessary
-   *       */
-  if (1 !=
-      EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len)) {
-    LOG_FATAL("error during aes 256 cbc decrypt update :%s",
-              ERR_error_string(ERR_get_error(), nullptr));
-  }
-
-  plaintext_len = len;
-
-  /* Finalise the decryption. Further plaintext bytes may be written at
-   *    * this stage.
-   *       */
-  if (1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len)) {
-    LOG_FATAL("error during aes 256 cbc decrypt final :%s",
-              ERR_error_string(ERR_get_error(), nullptr));
-  }
-  plaintext_len += len;
-
-  return plaintext_len;
-}
-
-std::vector<char> aes_encrypt(const fc::sha512 &key,
-                              const std::vector<char> &plain_text) {
-  std::vector<char> cipher_text(plain_text.size() + 16);
-  auto cipher_len =
-      aes_encrypt((unsigned char *)plain_text.data(), (int)plain_text.size(),
-                  (unsigned char *)&key, ((unsigned char *)&key) + 32,
-                  (unsigned char *)cipher_text.data());
-  fc_assert(cipher_len <= cipher_text.size(), "cipher_len>cipher_text.size");
-  cipher_text.resize(cipher_len);
-  return cipher_text;
-}
-std::vector<char> aes_decrypt(const fc::sha512 &key,
-                              const std::vector<char> &cipher_text) {
-  std::vector<char> plain_text(cipher_text.size());
-  auto plain_len =
-      aes_decrypt((unsigned char *)cipher_text.data(), (int)cipher_text.size(),
-                  (unsigned char *)&key, ((unsigned char *)&key) + 32,
-                  (unsigned char *)plain_text.data());
-  plain_text.resize(plain_len);
-  return plain_text;
-}
-
-} // namespace fc
+} } // namespace fc

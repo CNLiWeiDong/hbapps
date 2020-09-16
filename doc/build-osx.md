@@ -11,9 +11,21 @@ There may be more brew packages needed.
 
 Install clang 8 and other needed tools:
 ```
-brew install llvm@8 cmake git boost autoconf@2.13  mysql-connector-c mysql++ curl curl-openssl zlib cryptopp
+brew install llvm@8 cmake git boost autoconf@2.13  mysql-connector-c mysql++ curl curl-openssl zlib
 ```
+注：brew link openssl --force
 
+# Install crypto++
+```
+mkdir tmp && cd tmp
+git clone https://github.com/weidai11/cryptopp.git
+git clone https://github.com/noloader/cryptopp-pem.git
+cp cryptopp-pem/* cryptopp/
+cd cryptopp
+make distclean
+make -j 9
+make install
+```
 # Build hbapps
 
 Note: ignore warnings which look like this:

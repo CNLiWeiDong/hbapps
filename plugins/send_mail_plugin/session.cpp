@@ -1,6 +1,6 @@
 #include <hb/send_mail_plugin/session.h>
 #include <fc/logging/logging.h>
-#include <fc/crypto/base64.hpp>
+#include <fc/crypto/base.hpp>
 
 namespace hb{ namespace plugin {
     void session::mail(){
@@ -38,9 +38,9 @@ namespace hb{ namespace plugin {
         
         send(sock,"auth login\r\n");
         log_info << "mail response:" << get_response(sock);
-        send(sock,fc::base64_encode(user_)+"\r\n");
+        send(sock,fc::crypto::base64(user_)+"\r\n");
         log_info << "mail response:" << get_response(sock);
-        send(sock, fc::base64_encode(pass_)+"\r\n");
+        send(sock, fc::crypto::base64(pass_)+"\r\n");
         log_info << "mail response:" << get_response(sock);
         
         send(sock,"mail from: <"+user_+">\r\n");

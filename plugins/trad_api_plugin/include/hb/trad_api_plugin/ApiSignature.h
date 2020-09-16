@@ -5,7 +5,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <algorithm>
-#include <fc/crypto/base64.hpp>
+#include <fc/crypto/base.hpp>
 #include <fc/logging/logging.h>
 #include <openssl/hmac.h>
 
@@ -99,7 +99,7 @@ namespace Huobi {
             HMAC_CTX_free(ctx);
 #endif
             std::string code;
-            code = fc::base64_encode(output, 32);
+            code = fc::crypto::base64(std::string(output, output+32));
             return code;
         }
 
