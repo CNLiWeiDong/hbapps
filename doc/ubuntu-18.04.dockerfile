@@ -23,7 +23,6 @@ run apt-get update && apt-get install -y \
     libssl-dev          \
     curl                \
     libcurl4-openssl-dev \
-    libcrypto++-dev \
     zlib1g-dev
 
 run update-alternatives --install /usr/bin/clang clang /usr/bin/clang-8 100
@@ -43,6 +42,17 @@ workdir /root/cmake-3.14.5
 run ./bootstrap --parallel=10
 run make -j10
 run make -j10 install
+
+
+workdir /root
+run git clone https://github.com/weidai11/cryptopp.git
+run git clone https://github.com/noloader/cryptopp-pem.git
+run cp cryptopp-pem/* cryptopp/
+run cd cryptopp
+run make distclean
+run make -j 9
+run make install
+
 
 workdir /root
 run wget https://tangentsoft.com/mysqlpp/releases/mysql++-3.2.4.tar.gz

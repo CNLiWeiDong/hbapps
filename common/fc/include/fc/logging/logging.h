@@ -117,23 +117,15 @@ namespace fc {
       char str[log_max_length];                                                \
       sprintf(str, "%s" fmt, "", ##__VA_ARGS__);                               \
       log_fatal<<str;                                                          \
-      boost::throw_exception(std::runtime_error(str));                         \
   } while (0)
 
-#define FC_ASSERT(condition, fmt, ...)                                         \
-  do {                                                                         \
-    if (!(condition)) {                                                        \
-      LOG_FATAL(fmt,##__VA_ARGS__);                                            \
-    }                                                                          \
-  } while (0)
 
-#define fc_assert FC_ASSERT
 
-#define log_throw(task)                                                               \
-({                                                                                    \
-    std::string error_str = task+boost::current_exception_diagnostic_information();   \
-    log_fatal<<error_str;                                                             \
-    error_str;                                                                        \
-})
-#define LOG_THROW log_throw
+// #define log_throw(task)                                                               \
+// ({                                                                                    \
+//     std::string error_str = task+boost::current_exception_diagnostic_information();   \
+//     log_fatal<<error_str;                                                             \
+//     error_str;                                                                        \
+// })
+// #define LOG_THROW log_throw
 #endif // CPP_SERVER_LOGGING_H

@@ -4,6 +4,7 @@ project(fc)
 set(fc_sources
         src/compress/zlib.cpp
         src/logging/logging.cpp
+        src/error/exception.cpp
         src/http/http.cpp
         src/http/session.cpp
         src/https/https.cpp
