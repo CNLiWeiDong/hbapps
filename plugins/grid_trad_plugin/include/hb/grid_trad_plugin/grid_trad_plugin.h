@@ -7,7 +7,7 @@
 #include <functional>
 #include <string>
 #include <appbase/application.hpp>
-#include "hb/logging_plugin/logging_plugin.h"
+#include "hb/log_plugin/log_plugin.h"
 #include <hb/grid_trad_plugin/grid_trad_plugin_impl.h>
 #include <hb/grid_db_plugin/grid_db_plugin.h>
 #include <hb/send_mail_plugin/send_mail_plugin.h>
@@ -26,7 +26,7 @@ namespace hb{ namespace plugin {
     };
     class grid_trad_plugin : public appbase::plugin<grid_trad_plugin> {
         public:
-            APPBASE_PLUGIN_REQUIRES((logging_plugin)(grid_db_plugin)(send_mail_plugin)(trad_api_plugin))
+            APPBASE_PLUGIN_REQUIRES((log_plugin)(grid_db_plugin)(send_mail_plugin)(trad_api_plugin))
             grid_trad_plugin();
             virtual ~grid_trad_plugin();
             virtual void set_program_options(options_description&, options_description&) override;

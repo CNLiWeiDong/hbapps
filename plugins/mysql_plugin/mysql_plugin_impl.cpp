@@ -3,7 +3,8 @@
 //
 
 #include <hb/mysql_plugin/mysql_plugin_impl.h>
-#include <hb/logging_plugin/logging_plugin.h>
+#include <hb/log_plugin/log_plugin.h>
+#include <hb/mysql_plugin/mysql_error.h>
 
 namespace hb { namespace plugin {
 
@@ -39,8 +40,11 @@ namespace hb { namespace plugin {
             }
             con_ptr = make_shared<my_connection>();
             //con_ptr->thread_start() 创建时会自动启动
-            if(!con_ptr->connect(db,server,user,password,port))
-                LOG_FATAL("connect sql server error!");
+            if(!con_ptr->connect(db,server,user,password,port)) {
+                hb::plugin::mysql_exception e;
+                e.msg("connect sql server error!");
+                hb_throw(e);
+            }
             return con_ptr;
         }
         void mysql_plugin_impl::close(const shared_ptr<my_connection> &con){

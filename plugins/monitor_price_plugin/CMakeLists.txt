@@ -19,7 +19,7 @@ target_include_directories( monitor_price_plugin
 
 target_link_libraries( monitor_price_plugin
         appbase
-        fc
-        logging_plugin
+        hb
+        log_plugin
         send_mail_plugin
         )

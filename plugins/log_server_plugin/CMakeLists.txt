@@ -16,6 +16,6 @@ target_include_directories( log_server_plugin
 
 target_link_libraries( log_server_plugin
         appbase
-        fc
-        logging_plugin
+        hb
+        log_plugin
         )

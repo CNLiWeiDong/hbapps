@@ -1,5 +1,6 @@
 #include <hb/grid_trad_plugin/new_order.h>
-#include <fc/time/time.h>
+#include <hb/time/time.h>
+#include <hb/grid_trad_plugin/grid_trad_error.h>
 
 namespace hb{ namespace plugin {
         price_result_type new_order::query_price(const bool& is_buy){
@@ -7,8 +8,11 @@ namespace hb{ namespace plugin {
             auto &trad_plugin = app().get_plugin<trad_api_plugin>();
             auto trad_api = trad_plugin.get_api();
             auto price = trad_api->get_price();
-            if(!price.status || price.close_price<=0)
-                LOG_FATAL("query_price status error: %f",price.close_price);
+            if(!price.status || price.close_price<=0) {
+                grid_trad_exception e;
+                e.msg("query_price status error: %f",price.close_price);
+                hb_throw(e);
+            }
             return price;
         }
         void new_order::add_sale_order(const double& sale_price,const double& sale_num, const tactic_config_type &tactic){
@@ -62,7 +66,7 @@ namespace hb{ namespace plugin {
         }
         bool new_order::deal(std::set<std::string> dealing_segs){
             log_info<<"[fn] new_order::deal";
-            auto cur_timestamp = fc::timestamp();
+            auto cur_timestamp = hb::time::timestamp();
             if(cur_timestamp-last_sale_time_<sale_sleep_seconds_ && 
                     cur_timestamp-last_buy_time_<buy_sleep_seconds_)
                 return false;
@@ -72,7 +76,7 @@ namespace hb{ namespace plugin {
             auto sold_list = db_api->get_delivered_sale_array();
             // do sale 
             // 附近成交原则 从高到低卖出。下次更容易买回，底部的更容易卖出。
-            if(fc::timestamp()-last_sale_time_>=sale_sleep_seconds_) {
+            if(hb::time::timestamp()-last_sale_time_>=sale_sleep_seconds_) {
                 int sale_counts = 0;
                 for (auto it = tactics_.rbegin(); it!=tactics_.rend(); it++) {
                     if(dealing_segs.find(it->first)!=dealing_segs.end())
@@ -92,14 +96,14 @@ namespace hb{ namespace plugin {
                     price.max_buy_num -= new_sale_num;
                     const double sale_price = price.max_buy_price-price.max_buy_price*improve_deliver_premium_;
                     add_sale_order(sale_price, new_sale_num, it->second);
-                    last_sale_time_ = fc::timestamp();
+                    last_sale_time_ = hb::time::timestamp();
                     if(++sale_counts>=every_max_sale_counts_)
                         break;
                 }
             }
             // do buy 
             // 附近成交原则，从低到高买入，下次更容易卖出,高部的更容易买入。
-            if(fc::timestamp()-last_buy_time_>=buy_sleep_seconds_) {
+            if(hb::time::timestamp()-last_buy_time_>=buy_sleep_seconds_) {
                 int buy_counts = 0;
                 for (auto it = tactics_.begin(); it!=tactics_.end(); it++) {
                     if(dealing_segs.find(it->first)!=dealing_segs.end())
@@ -115,7 +119,7 @@ namespace hb{ namespace plugin {
                         break;
                     price.max_sale_num -= free_amount/buy_price;
                     add_buy_order(buy_price, free_amount, it->second);
-                    last_buy_time_ = fc::timestamp();
+                    last_buy_time_ = hb::time::timestamp();
                     if(++buy_counts>=every_max_buy_counts_)
                         break;
                 }

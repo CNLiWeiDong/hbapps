@@ -1,5 +1,6 @@
 #include <hb/grid_trad_plugin/grid_trad_plugin.h>
 #include <boost/algorithm/string.hpp>
+#include <hb/grid_trad_plugin/grid_trad_error.h>
 
 namespace hb{ namespace plugin{
         static appbase::abstract_plugin& _grid_trad_plugin = app().register_plugin<grid_trad_plugin>();
@@ -44,7 +45,9 @@ namespace hb{ namespace plugin{
                         vector<string> props;
                         boost::split(props, arg, boost::is_any_of("\t,"));
                         if(props.size()<4){
-                            LOG_FATAL("grid-tactics-config error: %s", arg.c_str());
+                            grid_trad_exception e;
+                            e.msg("grid-tactics-config error: %s", arg);
+                            hb_throw(e);
                         }
                         tactic_config_type one_tactic = {
                             .seg_id = props[0],
@@ -53,10 +56,14 @@ namespace hb{ namespace plugin{
                             .sale_number = std::atof(props[3].c_str())
                         };
                         if(one_tactic.sale_price<=one_tactic.buy_price){
-                            LOG_FATAL("tactics-config error:[%s] the amount of buy is bigger than sale.", one_tactic.seg_id.c_str());
+                            grid_trad_exception e;
+                            e.msg("tactics-config error:[%s] the amount of buy is bigger than sale.", one_tactic.seg_id);
+                            hb_throw(e);
                         }
                         if(one_tactic.sale_number<min_trad_num){
-                            LOG_FATAL("tactics-config error:[%s] the sale number is smaller than min trad num.", one_tactic.seg_id.c_str());
+                            grid_trad_exception e;
+                            e.msg("tactics-config error:[%s] the sale number is smaller than min trad num.", one_tactic.seg_id);
+                            hb_throw(e);
                         }
                         LOG_INFO("add tactic:%s,%.4f,%.4f,%.4f",one_tactic.seg_id.c_str(),one_tactic.sale_price,one_tactic.buy_price,one_tactic.sale_number);
                         my->add_tactics(one_tactic);

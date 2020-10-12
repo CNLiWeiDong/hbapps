@@ -17,7 +17,7 @@ target_include_directories( send_mail_plugin
 
 target_link_libraries( send_mail_plugin
         appbase
-        fc
-        logging_plugin
+        hb
+        log_plugin
         thread_pool_plugin
         )

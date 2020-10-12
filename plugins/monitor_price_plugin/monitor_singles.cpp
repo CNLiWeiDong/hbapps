@@ -7,8 +7,8 @@
 #include <boost/algorithm/string/regex.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <math.h>
-#include <fc/http/http.h>
-#include <fc/https/https.h>
+#include <hb/http/http.h>
+#include <hb/https/https.h>
 #include <hb/send_mail_plugin/send_mail_plugin.h>
 #include <sstream>
 
@@ -35,7 +35,7 @@ namespace hb{ namespace plugin {
                     log_info<< "【single " << target.id << "】normal " << target.value << contents_streame.str();
                 }else{
                     log_info<< "【single " << target.id << "】attent " << target.value << contents_streame.str();
-                    auto cur_seconds = fc::timestamp();
+                    auto cur_seconds = hb::time::timestamp();
                     if(cur_seconds - it.send_msg_time >=sendmsg_seconds_){
                         it.send_msg_time = cur_seconds;
                         log_info<<"【single send msg " << target.id <<"】 single value is " << target.value << contents_streame.str();

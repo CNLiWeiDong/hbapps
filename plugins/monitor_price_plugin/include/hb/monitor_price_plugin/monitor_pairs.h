@@ -10,7 +10,7 @@
 #include <functional>
 #include <string>
 #include <atomic>
-#include <fc/logging/logging.h>
+#include <hb/log/log.h>
 #include <appbase/application.hpp>
 #include <hb/monitor_price_plugin/monitor_targets.h>
 

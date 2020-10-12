@@ -3,6 +3,7 @@
 #include <boost/algorithm/string.hpp>
 #include <stdlib.h>
 #include <vector>
+#include <hb/monitor_mail_plugin/monitor_mail_error.h>
 
 namespace hb{ namespace plugin{
         static appbase::abstract_plugin& _monitor_mail_plugin = app().register_plugin<monitor_mail_plugin>();
@@ -29,7 +30,9 @@ namespace hb{ namespace plugin{
                 log_info<<"monitor-mail-notify-time:"<<time_str;
                 log_info<<"monitor-mail-notify-time hours:"<<props[0]<<" minutes:"<< props[1];
                 if(props.size()<2){
-                        LOG_FATAL("monitor-mail-notify-time error: %s", time_str.c_str());
+                        hb::plugin::monitor_mail_exception e;
+                        e.msg("monitor-mail-notify-time error: %s", time_str);
+                        hb_throw(e);
                 }
                 my->notify_time(stoi(props[0])*60+stoi(props[1]));
                 

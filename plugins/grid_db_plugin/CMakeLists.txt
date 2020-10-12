@@ -18,8 +18,8 @@ target_include_directories( grid_db_plugin
 
 target_link_libraries( grid_db_plugin
         appbase
-        fc
-        logging_plugin
+        hb
+        log_plugin
         mysql_plugin
         )
 add_subdirectory(test)
