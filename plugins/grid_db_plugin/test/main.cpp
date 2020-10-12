@@ -6,7 +6,7 @@
 #include "appbase/application.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/thread/thread.hpp>
-#include <fc/logging/logging.h>
+#include <hb/log/log.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <hb/grid_db_plugin/grid_db_plugin.h>
 #include <memory>
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(app_init) try {
         BOOST_FAIL("initialize<grid_db_plugin> error!");
     app().startup();
 } catch (...) {
-    log_throw("app_init");
+    log_throw("app_init", nullptr);
     BOOST_FAIL("app_init error!");
 };
 static sale_tx_type new_sale_tx;
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(add_new_sale_tx) try {
     new_sale_tx.sale_price = sale_price;
     api->add_new_sale_tx(new_sale_tx);
 } catch (...) {
-    log_throw("add_new_sale_tx");
+    log_throw("add_new_sale_tx", nullptr);
     BOOST_FAIL("add_new_sale_tx error!");
 };
 // get_new_sale_array
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(get_new_sale_array) try {
     }
     BOOST_FAIL("get_new_sale_array not find the new sale tx!");
 } catch (...) {
-    log_throw("get_new_sale_array");
+    log_throw("get_new_sale_array", nullptr);
     BOOST_FAIL("get_new_sale_array error!");
 };
 // deliver_sale_tx
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(deliver_sale_tx) try {
     api->deliver_sale_tx(new_sale_tx);
     
 } catch (...) {
-    log_throw("deliver_sale_tx");
+    log_throw("deliver_sale_tx", nullptr);
     BOOST_FAIL("deliver_sale_tx error!");
 };
 // get_new_sale_array_empty
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(get_new_sale_array_empty) try {
         BOOST_FAIL("get_new_sale_array_empty is not should exist new sale tx!");
     }
 } catch (...) {
-    log_throw("get_new_sale_array_empty");
+    log_throw("get_new_sale_array_empty", nullptr);
     BOOST_FAIL("get_new_sale_array_empty error!");
 };
 // get_delivered_sale_array
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(get_delivered_sale_array) try {
     }
     BOOST_FAIL("get_delivered_sale_array not find the new sale tx!");
 } catch (...) {
-    log_throw("get_delivered_sale_array");
+    log_throw("get_delivered_sale_array", nullptr);
     BOOST_FAIL("get_delivered_sale_array error!");
 };
 
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(add_new_buy_tx) try {
     new_buy_tx.buy_price = buy_price;    
     api->add_new_buy_tx(new_buy_tx);
 } catch (...) {
-    log_throw("add_new_buy_tx");
+    log_throw("add_new_buy_tx", nullptr);
     BOOST_FAIL("add_new_buy_tx error!");
 };
 // get_new_buy_array
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(get_new_buy_array) try {
     }
     BOOST_FAIL("get_new_buy_array not find the new buy tx!");
 } catch (...) {
-    log_throw("get_new_buy_array");
+    log_throw("get_new_buy_array", nullptr);
     BOOST_FAIL("get_new_buy_array error!");
 };
 
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE(deliver_buy_tx) try {
     api->deliver_buy_tx(new_buy_tx);
     
 } catch (...) {
-    log_throw("deliver_buy_tx");
+    log_throw("deliver_buy_tx", nullptr);
     BOOST_FAIL("deliver_buy_tx error!");
 };
 
@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(get_delivered_sale_array_empty) try {
         BOOST_FAIL("get_delivered_sale_array_exist is should exist delivered sale tx!");
     }
 } catch (...) {
-    log_throw("get_delivered_sale_array_exist");
+    log_throw("get_delivered_sale_array_exist", nullptr);
     BOOST_FAIL("get_delivered_sale_array_exist error!");
 };
 // get_new_buy_array_empty
@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE(get_new_buy_array_empty) try {
         BOOST_FAIL("get_new_buy_array_empty is should not exist new buy tx!");
     }
 } catch (...) {
-    log_throw("get_new_buy_array_empty");
+    log_throw("get_new_buy_array_empty", nullptr);
     BOOST_FAIL("get_new_buy_array_empty error!");
 };
 BOOST_AUTO_TEST_SUITE_END()

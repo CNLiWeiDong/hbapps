@@ -6,7 +6,7 @@
 #include "appbase/application.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/thread/thread.hpp>
-#include <fc/logging/logging.h>
+#include <hb/log/log.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 using namespace std;
@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(tt) try {
     log_info<<b;
     log_info<<b-a;
 } catch (...) {
-    log_throw("tt");
+    log_throw("tt", nullptr);
     BOOST_FAIL("tt error!");
 };
 BOOST_AUTO_TEST_SUITE_END()

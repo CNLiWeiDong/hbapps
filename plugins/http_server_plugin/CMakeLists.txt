@@ -20,7 +20,7 @@ target_include_directories( http_server_plugin
 
 target_link_libraries( http_server_plugin
         appbase
-        fc
+        hb
         thread_pool_plugin
-        logging_plugin
+        log_plugin
         )

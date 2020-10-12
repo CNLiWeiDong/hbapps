@@ -1,6 +1,7 @@
 #include <hb/http_server_plugin/listener.h>
 #include <hb/http_server_plugin/session_ssl.h>
 #include <hb/http_server_plugin/session.h>
+#include <hb/http_server_plugin/http_server_error.h>
 
 namespace hb { namespace http_server { 
         void listener::init_acceptor()
@@ -10,26 +11,34 @@ namespace hb { namespace http_server {
             acceptor_.open(endpoint_.protocol(), ec);
             if(ec)
             {
-                LOG_FATAL("open acceptor error: %s",ec.message().c_str());
+                hb::plugin::http_server_exception e;
+                e.msg("open acceptor error: %s",ec.message());
+                hb_throw(e);
             }
             // Allow address reuse
             acceptor_.set_option(net::socket_base::reuse_address(true), ec);
             if(ec)
             {
-                LOG_FATAL("set acceptor option error: %s",ec.message().c_str());
+                hb::plugin::http_server_exception e;
+                e.msg("set acceptor option error: %s",ec.message());
+                hb_throw(e);
             }
             // Bind to the server address
             acceptor_.bind(endpoint_, ec);
             if(ec)
             {
-                LOG_FATAL("bind acceptor error: %s",ec.message().c_str());
+                hb::plugin::http_server_exception e;
+                e.msg("bind acceptor error: %s",ec.message());
+                hb_throw(e);
             }
             // Start listening for connections
             acceptor_.listen(
                 net::socket_base::max_listen_connections, ec);
             if(ec)
             {
-                LOG_FATAL("listen error: %s",ec.message().c_str());
+                hb::plugin::http_server_exception e;
+                e.msg("listen error: %s",ec.message());
+                hb_throw(e);
             }
         }
         // Start accepting incoming connections

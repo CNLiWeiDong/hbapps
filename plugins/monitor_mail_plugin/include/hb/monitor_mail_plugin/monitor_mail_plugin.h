@@ -7,7 +7,7 @@
 #include <string>
 #include <appbase/application.hpp>
 #include <hb/send_mail_plugin/send_mail_plugin.h>
-#include <hb/logging_plugin/logging_plugin.h>
+#include <hb/log_plugin/log_plugin.h>
 #include <hb/monitor_mail_plugin/monitor_mail_plugin_impl.h>
 
 using namespace std;
@@ -17,7 +17,7 @@ namespace hb{ namespace plugin {
     
     class monitor_mail_plugin : public appbase::plugin<monitor_mail_plugin> {
         public:
-            APPBASE_PLUGIN_REQUIRES((logging_plugin)(send_mail_plugin))
+            APPBASE_PLUGIN_REQUIRES((log_plugin)(send_mail_plugin))
             monitor_mail_plugin();
             virtual ~monitor_mail_plugin();
             virtual void set_program_options(options_description&, options_description&) override;

@@ -7,8 +7,8 @@
 #include <boost/algorithm/string/regex.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <math.h>
-#include <fc/http/http.h>
-#include <fc/https/https.h>
+#include <hb/http/http.h>
+#include <hb/https/https.h>
 #include <hb/send_mail_plugin/send_mail_plugin.h>
 #include <sstream>
 
@@ -19,14 +19,14 @@ namespace hb{ namespace plugin {
         }
         
         void monitor_price_plugin_impl::deal_monitor() {
-            try{
+            hb_try
                 log_info<<"begin deal_monitor";
                 singles_->deal(targets_);
                 pairs_->deal(targets_);
                 log_info<<"end deal_monitor";
-            }catch(...){
-                log_throw("deal_monitor");
-            }
+            hb_catch([](const auto& e){
+                log_throw("deal_monitor", e);
+            })
         }
         
         void monitor_price_plugin_impl::loop() {

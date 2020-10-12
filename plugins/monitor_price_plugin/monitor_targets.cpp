@@ -7,8 +7,8 @@
 #include <boost/algorithm/string/regex.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <math.h>
-#include <fc/http/http.h>
-#include <fc/https/https.h>
+#include <hb/http/http.h>
+#include <hb/https/https.h>
 #include <hb/send_mail_plugin/send_mail_plugin.h>
 #include <sstream>
 
@@ -35,7 +35,7 @@ namespace hb{ namespace plugin {
             item.request_error_times++;
             if(item.request_error_times>=max_request_error_time_) {
                 item.request_error_times = 0;
-                auto cur_seconds = fc::timestamp();
+                auto cur_seconds = hb::time::timestamp();
                 if(cur_seconds - item.last_send_error_time >=senderror_seconds_){
                     item.last_send_error_time = cur_seconds;
                     log_info<<"【target request error】 " << item.id << item.request_error_times;
@@ -48,7 +48,7 @@ namespace hb{ namespace plugin {
             }
         }
         void monitor_targets::set_target(target_type &item, const int &status, const std::string &res) {
-            try{
+            hb_try
                 LOG_INFO("request callback %s, %s, %s", item.id.c_str(), item.server_type.c_str(), item.host.c_str());
                 if(status!=200){
                     LOG_ERROR("[%s, %s, %s] request callback %d %s", 
@@ -63,7 +63,7 @@ namespace hb{ namespace plugin {
                 boost::smatch what;
                 if(regex_value(reg, what, res)) {
                     item.status = target_status::target_status_ok;
-                    item.update_time = fc::timestamp();
+                    item.update_time = hb::time::timestamp();
                     const string val = what[1];
                     item.value = std::atof(val.c_str());
                     LOG_INFO("set target value info %s, %f, %llu", item.id.c_str(), item.value, item.update_time);
@@ -77,7 +77,7 @@ namespace hb{ namespace plugin {
                     boost::smatch what;
                     if(regex_value(reg, what, res)) {
                         item.status = target_status::target_status_ok;
-                        item.update_time = fc::timestamp();
+                        item.update_time = hb::time::timestamp();
                         item.date = what[1];
                         LOG_INFO("set target date info %s, %s, %llu", item.id.c_str(), item.date.c_str(), item.update_time);
                     }else {
@@ -91,7 +91,7 @@ namespace hb{ namespace plugin {
                     boost::smatch what;
                     if(regex_value(reg, what, res)) {
                         item.status = target_status::target_status_ok;
-                        item.update_time = fc::timestamp();
+                        item.update_time = hb::time::timestamp();
                         vector<string> contents;
                         for(int i=1;i<what.size();i++){
                             contents.push_back(what[i]);
@@ -105,19 +105,19 @@ namespace hb{ namespace plugin {
                     }
                 }
                 item.request_error_times = 0;
-            }catch(...){
+            hb_catch([&](const auto &e){
                 item.status = target_status::target_status_throw_error;
                 add_request_error_times(item);
-                log_throw("set_target");
-            }
+                log_throw("monitor_targets::set_target", e);
+            })
         }
         void monitor_targets::deal_query() {
-            try{
+            hb_try
                 auto self = shared_from_this();
                 auto & ioc = app().get_io_service();
                 log_info<<"begin deal_query";
-                const int week_day = fc::day_of_week();
-                const int day_minutes = fc::hours_of_day()*60+fc::minutes_of_day();
+                const int week_day = hb::time::day_of_week();
+                const int day_minutes = hb::time::hours_of_day()*60+hb::time::minutes_of_day();
                 for(auto &it : all_targets_list_) {
                     auto &item = it.second;
                     if(!item.active)
@@ -139,17 +139,17 @@ namespace hb{ namespace plugin {
                     };
                     if(item.server_type=="https") 
                     {
-                        fc::https::https hs(item.host, item.port, item.target, delay_update_seconds_);
+                        hb::https::https hs(item.host, item.port, item.target, delay_update_seconds_);
                         hs.get(ioc, query_callback);
                     }else
                     {
-                        fc::http::http h(item.host, item.port, item.target, delay_update_seconds_);
+                        hb::http::http h(item.host, item.port, item.target, delay_update_seconds_);
                         h.get(ioc, query_callback);
                     }
                 }
                 log_info<<"end deal_query";
-            }catch(...){
-                log_throw("deal_query");
-            }
+            hb_catch([](const auto &e){
+                log_throw("monitor_targets::deal_query", e);
+            })
         }
 } }

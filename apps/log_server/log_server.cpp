@@ -4,7 +4,7 @@
 #include <boost/filesystem/path.hpp> 
 #include <boost/filesystem/operations.hpp>
 #include "appbase/application.hpp"
-#include "hb/logging_plugin/logging_plugin.h"
+#include "hb/log_plugin/log_plugin.h"
 #include "hb/log_server_plugin/log_server_plugin.h"
 
 using namespace appbase;

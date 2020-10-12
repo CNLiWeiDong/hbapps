@@ -19,7 +19,7 @@
 #include <boost/beast/ssl.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/config.hpp>
-#include <hb/logging_plugin/logging_plugin.h>
+#include <hb/log_plugin/log_plugin.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
@@ -98,7 +98,7 @@ namespace hb { namespace http_server {
             //     return rv;
             // }
         };
-        try {
+        hb_try
             ptree pt_req;
             log_info<<req.body();
             stringstream stream(req.body());
@@ -125,14 +125,10 @@ namespace hb { namespace http_server {
                 results.push_back(std::make_pair("",item));
             }
             send_response();
-        }catch(const std::exception &e){
-            // cout<<boost::diagnostic_information(e)<<endl;
-            add_error_result("server-error", -1, log_throw("do handle_request work error"));
+        hb_catch([&](const auto &e){
+            add_error_result("server-error", -1, log_throw("do handle_request work error", e));
             send_response();
-        }catch(...){
-            add_error_result("server-error", -1, log_throw("do handle_request work error..."));
-            send_response();
-        }
+        })
     }
 
 }}

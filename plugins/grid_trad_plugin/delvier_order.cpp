@@ -1,6 +1,6 @@
 #include <hb/grid_trad_plugin/delvier_order.h>
 #include <sstream>
-#include <fc/time/time.h>
+#include <hb/time/time.h>
 
 namespace hb{ namespace plugin {
         void delvier_order::complete_sale_order(const order_result_type& order_result, const sale_tx_type& tx) {
@@ -39,7 +39,7 @@ namespace hb{ namespace plugin {
                     continue;
                 }
                 // cancell tx
-                if(fc::timestamp()-tx.create_time>=order_cancel_seconds_){
+                if(hb::time::timestamp()-tx.create_time>=order_cancel_seconds_){
                     trad_api->cancell_order(tx.order_id);
                 }
             }
@@ -76,7 +76,7 @@ namespace hb{ namespace plugin {
                     continue;
                 }
                 // cancell tx
-                if(fc::timestamp()-tx.create_time>=order_cancel_seconds_){
+                if(hb::time::timestamp()-tx.create_time>=order_cancel_seconds_){
                     trad_api->cancell_order(tx.order_id);
                 }
             }
@@ -88,15 +88,12 @@ namespace hb{ namespace plugin {
             auto sellings = db_api->get_new_sale_array();
             auto buyings = db_api->get_new_buy_array();
             if(sellings.size()>0 || buyings.size()>0) {
-                try{
+                hb_try
                     deal_selling_order(sellings);
                     deal_buying_order(buyings);
-                }catch(...) {
-                    log_throw("deal_loop throw:");
-                }
-                // deal_selling_order(sellings);
-                // deal_buying_order(buyings);
-                // return true;
+                hb_catch([](const auto &e){
+                    log_throw("deal selling or buying error.", e);
+                })
             }
             std::set<std::string> dealing_segs;
             for(auto &it : sellings) {

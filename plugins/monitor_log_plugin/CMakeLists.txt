@@ -30,6 +30,6 @@ target_include_directories( monitor_log_plugin
 target_link_libraries( monitor_log_plugin
         ${Curl_LIBRARIES}
         appbase
-        fc
-        logging_plugin
+        hb
+        log_plugin
         )

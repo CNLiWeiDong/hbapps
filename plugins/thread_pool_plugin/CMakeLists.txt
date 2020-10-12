@@ -15,6 +15,6 @@ target_include_directories( thread_pool_plugin
         )
 
 target_link_libraries( thread_pool_plugin
-        logging_plugin
+        log_plugin
         appbase
         )

@@ -2,7 +2,8 @@
 
 #include <curl/curl.h>
 #include <string>
-#include <fc/logging/logging.h>
+#include <hb/log/log.h>
+#include <hb/trad_api_plugin/trad_api_error.h>
 
 using namespace std;
 namespace hb{ namespace http2{
@@ -24,11 +25,15 @@ namespace hb{ namespace http2{
     int http_call_sync(const http_requet_type& request, string &response) {
         CURLcode code = curl_global_init(CURL_GLOBAL_DEFAULT);
         if (code != CURLE_OK) {
-            LOG_FATAL("curl_global_init() Err: %d", code);
+            hb::plugin::trad_api_exception e;
+            e.msg("curl_global_init Err: %d", code);
+            hb_throw(e);
         }
         CURL* pCurl = curl_easy_init();
         if (pCurl == NULL) {
-            LOG_FATAL("curl_easy_init() Err");
+            hb::plugin::trad_api_exception e;
+            e.msg("curl_easy_init Err");
+            hb_throw(e);
         }
         std::string sBuffer;
         curl_easy_setopt(pCurl, CURLOPT_SSL_VERIFYPEER, 1L);
@@ -58,7 +63,7 @@ namespace hb{ namespace http2{
         // if (code != CURLE_OK) {
         //     curl_easy_cleanup(pCurl);
         //     curl_global_cleanup();
-        //     LOG_FATAL("curl_easy_perform() Err: %d", code);
+        //     hb_throw("curl_easy_perform() Err: %d", code);
         // }
         curl_easy_cleanup(pCurl);
         curl_global_cleanup();

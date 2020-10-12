@@ -5,9 +5,10 @@
 #include <time.h>
 #include <stdio.h>
 #include <algorithm>
-#include <fc/crypto/base.hpp>
-#include <fc/logging/logging.h>
+#include <hb/crypto/base.hpp>
+#include <hb/log/log.h>
 #include <openssl/hmac.h>
+#include <hb/trad_api_plugin/trad_api_error.h>
 
 namespace Huobi {
 
@@ -68,7 +69,9 @@ namespace Huobi {
         static std::string CreateSignature(std::string host, std::string accessKey, std::string secretKey,
                                            std::string adress, std::string method, char *timeBuf, const char *param) {
             if (accessKey.empty() || secretKey.empty()) {
-                LOG_FATAL("API key and secret key are required");
+                hb::plugin::trad_api_exception e;
+                e.msg("API key and secret key are required!");
+                hb_throw(e);
             }
             
             std::string cre = method + "\n" + host + "\n" + adress + "\n"
@@ -99,7 +102,7 @@ namespace Huobi {
             HMAC_CTX_free(ctx);
 #endif
             std::string code;
-            code = fc::crypto::base64(std::string(output, output+32));
+            code = hb::crypto::base64(std::string(output, output+32));
             return code;
         }
 

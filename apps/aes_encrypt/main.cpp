@@ -1,6 +1,6 @@
 #include <iostream>
 #include<unistd.h>
-#include <fc/crypto/aes.hpp>
+#include <hb/crypto/aes.hpp>
 
 using namespace std;
 
@@ -29,8 +29,8 @@ int main() {
             cerr<<"password fonfirm is wrong!";
             return 0;
         }
-        std::string encrypted_str = fc::crypto::cfb_aes_encrypt(pass, plan_text);
-        if(plan_text!=fc::crypto::cfb_aes_decrypt(pass, encrypted_str)) {
+        std::string encrypted_str = hb::crypto::cfb_aes_encrypt(pass, plan_text);
+        if(plan_text!=hb::crypto::cfb_aes_decrypt(pass, encrypted_str)) {
             cerr<<"use pass cfb_aes_decrypt to error!";
             return 0;
         }

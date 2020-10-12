@@ -1,5 +1,5 @@
 add_subdirectory(thread_pool_plugin)
-add_subdirectory(logging_plugin)
+add_subdirectory(log_plugin)
 add_subdirectory(http_server_plugin)
 add_subdirectory(monitor_price_plugin)
 add_subdirectory(send_mail_plugin)

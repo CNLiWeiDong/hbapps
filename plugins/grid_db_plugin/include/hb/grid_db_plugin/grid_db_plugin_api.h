@@ -8,7 +8,7 @@
 #include <functional>
 #include <string>
 #include <appbase/application.hpp>
-#include <hb/logging_plugin/logging_plugin.h>
+#include <hb/log_plugin/log_plugin.h>
 #include <hb/grid_db_plugin/grid_db_plugin_impl.h>
 
 using namespace std;

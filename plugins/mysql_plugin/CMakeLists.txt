@@ -21,9 +21,9 @@ target_include_directories( mysql_plugin
         )
 
 target_link_libraries( mysql_plugin
-        logging_plugin
+        log_plugin
         ${MYSQLPP_LIBRARY}
         ${MYSQLCLIENT_LIBRARY}
         appbase
-        fc
+        hb
         )

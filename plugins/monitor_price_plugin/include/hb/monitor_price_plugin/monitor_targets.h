@@ -10,11 +10,12 @@
 #include <functional>
 #include <string>
 #include <atomic>
-#include <fc/logging/logging.h>
+#include <hb/log/log.h>
 #include <appbase/application.hpp>
-#include <fc/time/time.h>
+#include <hb/time/time.h>
 #include <hb/send_mail_plugin/send_mail_plugin.h>
 #include <sstream>
+#include <hb/monitor_price_plugin/monitor_price_error.h>
 
 namespace hb{ namespace plugin {
     using namespace std;
@@ -71,7 +72,9 @@ namespace hb{ namespace plugin {
             auto iter = all_targets_list_.find(id);
             if(iter != all_targets_list_.end())
             {
-                LOG_FATAL("%s target already existed!", id.c_str());
+                hb::plugin::monitor_price_exception e;
+                e.msg("%s target already existed!", id);
+                hb_throw(e);
             }
             all_targets_list_.insert(decltype(all_targets_list_)::value_type(id,std::move(target)));
         }

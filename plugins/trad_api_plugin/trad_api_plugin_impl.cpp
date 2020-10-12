@@ -2,7 +2,7 @@
 // Created by 李卫东 on 2019-02-19.
 //
 #include <hb/trad_api_plugin/trad_api_plugin_impl.h>
-#include <fc/https/https.h>
+#include <hb/https/https.h>
 #include <boost/asio/ssl/error.hpp>
 #include <boost/asio/ssl/stream.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -15,6 +15,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <hb/trad_api_plugin/http2.h>
+#include <hb/trad_api_plugin/trad_api_error.h>
 
 namespace hb{ namespace plugin {
         using namespace boost::property_tree;
@@ -45,7 +46,9 @@ namespace hb{ namespace plugin {
                 string res_body;
                 auto code = hb::http2::http_call_sync(std::move(req), res_body);
                 if(code){
-                        LOG_FATAL("get_account http error:%d", code);
+                        hb::plugin::trad_api_exception e;
+                        e.msg("get_account http error:%d", code);
+                        hb_throw(e);
                 }
                 log_info<<"get_account:" <<code << res_body;
                 ptree res_pt;
@@ -54,7 +57,9 @@ namespace hb{ namespace plugin {
                 auto status = res_pt.get_optional<string>("status");
                 if(!status || *status!="ok"){
                         log_error<<"get_account error:"<< res_body;
-                        LOG_FATAL("get_account status error!");
+                        hb::plugin::trad_api_exception e;
+                        e.msg("get_account status error!");
+                        hb_throw(e);
                 }
                 ptree account_arr = res_pt.get_child("data");
                 for(auto it = account_arr.begin(); it!=account_arr.end(); it++) {
@@ -63,7 +68,9 @@ namespace hb{ namespace plugin {
                                 return it->second.get<string>("id");
                         }
                 }
-                LOG_FATAL("get_account is empty!");
+                hb::plugin::trad_api_exception e;
+                e.msg("get_account is empty!");
+                hb_throw(e);
                 return "";
         }
         const order_result_type trad_api_plugin_impl::get_order_status(const string& order_id) {
@@ -79,7 +86,9 @@ namespace hb{ namespace plugin {
                 string res_body;
                 auto code = hb::http2::http_call_sync(std::move(req), res_body);
                 if(code){
-                        LOG_FATAL("get_order_status http error:%d", code);
+                        hb::plugin::trad_api_exception e;
+                        e.msg("get_order_status http error:%d", code);
+                        hb_throw(e);
                 }
                 log_info<<"get_order_status:" <<code << res_body;
                 ptree res_pt;
@@ -88,7 +97,9 @@ namespace hb{ namespace plugin {
                 auto status = res_pt.get_optional<string>("status");
                 if(!status || *status!="ok"){
                         log_error<<"get_order_status error:"<< res_body;
-                        LOG_FATAL("get_order_status status error!");
+                        hb::plugin::trad_api_exception e;
+                        e.msg("get_order_status status error!");
+                        hb_throw(e);
                 }
                 ptree d = res_pt.get_child("data");
                 const string state = d.get<string>("state");
@@ -131,7 +142,9 @@ namespace hb{ namespace plugin {
                 string res_body;
                 auto code = hb::http2::http_call_sync(std::move(req), res_body);
                 if(code){
-                        LOG_FATAL("cancell_order http error:%d", code);
+                        hb::plugin::trad_api_exception e;
+                        e.msg("cancell_order http error:%d", code);
+                        hb_throw(e);
                 }
                 log_info<<"cancell_order:" <<code << res_body;
                 ptree res_pt;
@@ -140,7 +153,9 @@ namespace hb{ namespace plugin {
                 auto status = res_pt.get_optional<string>("status");
                 if(!status || *status!="ok"){
                         log_error<<"cancell_order error:"<< res_body;
-                        LOG_FATAL("cancell_order status error!");
+                        hb::plugin::trad_api_exception e;
+                        e.msg("cancell_order status error!");
+                        hb_throw(e);
                 }
         }
         const string trad_api_plugin_impl::query_order_id_by_client(const string& client_id) {
@@ -158,7 +173,10 @@ namespace hb{ namespace plugin {
                 string res_body;
                 auto code = hb::http2::http_call_sync(std::move(req), res_body);
                 if(code){
-                        LOG_FATAL("query_order_id_by_client http error:%d", code);
+                        log_error<<"cancell_order error:"<< res_body;
+                        hb::plugin::trad_api_exception e;
+                        e.msg("query_order_id_by_client http error:%d", code);
+                        hb_throw(e);
                 }
                 log_info<<"query_order_id_by_client body:" <<code << res_body;
                 ptree res_pt;
@@ -167,7 +185,10 @@ namespace hb{ namespace plugin {
                 auto status = res_pt.get_optional<string>("status");
                 if(!status || *status!="ok"){
                         log_error<<"query_order_id_by_client error:"<< res_body;
-                        LOG_FATAL("query_order_id_by_client status error!");
+                        log_error<<"cancell_order error:"<< res_body;
+                        hb::plugin::trad_api_exception e;
+                        e.msg("query_order_id_by_client status error!");
+                        hb_throw(e);
                 }
                 ptree d = res_pt.get_child("data");
                 return d.get<string>("id");
@@ -212,7 +233,9 @@ namespace hb{ namespace plugin {
                 auto status = res_pt.get_optional<string>("status");
                 if(!status || *status!="ok"){
                         log_error<<"new_order error:"<< res_body;
-                        LOG_FATAL("new_order status error!");
+                        hb::plugin::trad_api_exception e;
+                        e.msg("new_order status error!");
+                        hb_throw(e);
                 }
                 return res_pt.get<string>("data");
         }
@@ -226,7 +249,9 @@ namespace hb{ namespace plugin {
                 string res_body;
                 auto code = hb::http2::http_call_sync(std::move(req), res_body);
                 if(code){
-                        LOG_FATAL("get_price http error:%d", code);
+                        hb::plugin::trad_api_exception e;
+                        e.msg("get_price http error:%d", code);
+                        hb_throw(e);
                 }
                 log_info<<"get_price:"<<code<<"="<<res_body;
                 ptree res_pt;
@@ -235,12 +260,16 @@ namespace hb{ namespace plugin {
                 auto status = res_pt.get_optional<string>("status");
                 if(!status || *status!="ok"){
                         log_error<<"get_price error:"<< res_body;
-                        LOG_FATAL("get_price status error!");
+                        hb::plugin::trad_api_exception e;
+                        e.msg("get_price status error!");
+                        hb_throw(e);
                 }
                 boost::format fmt("market.%1%.detail.merged");
                 fmt%data_.target_pair;
                 if(res_pt.get<string>("ch")!=fmt.str()){
-                        LOG_FATAL("get_price price is not market.eosusdt.detail.merged!");
+                        hb::plugin::trad_api_exception e;
+                        e.msg("get_price price is not market.eosusdt.detail.merged!");
+                        hb_throw(e);
                 }
                 auto tick = res_pt.get_child("tick");
                 double close_price = tick.get<double>("close");
