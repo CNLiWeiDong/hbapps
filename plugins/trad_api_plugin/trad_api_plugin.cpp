@@ -4,7 +4,7 @@
 #include <boost/algorithm/string/regex.hpp>
 #include <stdlib.h>
 #include <set>
-#include <fc/crypto/aes.hpp>
+#include <hb/crypto/aes.hpp>
 
 namespace hb{ namespace plugin{
         static appbase::abstract_plugin& _trad_api_plugin = app().register_plugin<trad_api_plugin>();
@@ -57,7 +57,7 @@ namespace hb{ namespace plugin{
                 log_info<<"trad_api_plugin::plugin_initialize2";
                 const string pw_of_secret_key = options.at( "secret-key-password" ).as<string>();
                 if (pw_of_secret_key!="no") {
-                        data.secret_key = fc::crypto::cfb_aes_decrypt(pw_of_secret_key, data.secret_key);
+                        data.secret_key = hb::crypto::cfb_aes_decrypt(pw_of_secret_key, data.secret_key);
                 }
                 my->data(std::move(data));
                 log_info<<"trad_api_plugin::plugin_initialize [end]";

@@ -12,7 +12,7 @@
 #include <thread>
 #include <functional>
 #include <string>
-#include <fc/logging/logging.h>
+#include <hb/log/log.h>
 #include <hb/http_server_plugin/listener.h>
 #include <boost/signals2/signal.hpp>
 

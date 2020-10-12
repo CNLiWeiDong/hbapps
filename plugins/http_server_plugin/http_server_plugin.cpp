@@ -1,4 +1,5 @@
 #include <hb/http_server_plugin/http_server_plugin.h>
+#include <hb/http_server_plugin/http_server_error.h>
 
 namespace hb{ namespace plugin{
         static appbase::abstract_plugin& _http_server_plugin = app().register_plugin<http_server_plugin>();
@@ -34,7 +35,9 @@ namespace hb{ namespace plugin{
                     )
                 )
                 {
-                    LOG_FATAL("https server need certificate-file and private-file in config-dir path!");
+                    http_server_exception e;
+                    e.msg("https server need certificate-file and private-file in config-dir path!");
+                    hb_throw(e);
                 }
                 string certificate;
                 if( options.count( "https-certificate-file" ) && options.at( "https-certificate-file" ).as<string>().length())

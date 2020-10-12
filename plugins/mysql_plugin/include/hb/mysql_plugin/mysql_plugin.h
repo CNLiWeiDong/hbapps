@@ -8,7 +8,7 @@
 #include <functional>
 #include <string>
 #include <appbase/application.hpp>
-#include <hb/logging_plugin/logging_plugin.h>
+#include <hb/log_plugin/log_plugin.h>
 #include <hb/mysql_plugin/mysql_plugin_impl.h>
 
 using namespace std;
@@ -37,7 +37,7 @@ namespace hb{ namespace plugin {
         };
         class mysql_plugin : public appbase::plugin<mysql_plugin> {
         public:
-            APPBASE_PLUGIN_REQUIRES((logging_plugin))
+            APPBASE_PLUGIN_REQUIRES((log_plugin))
             mysql_plugin();
             virtual ~mysql_plugin();
             virtual void set_program_options(options_description&, options_description&) override;

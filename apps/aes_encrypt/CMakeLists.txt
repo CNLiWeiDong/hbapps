@@ -11,5 +11,5 @@ target_include_directories(aes_encrypt
         )
 
 target_link_libraries(aes_encrypt
-        PRIVATE fc
+        PRIVATE hb
         )

@@ -6,7 +6,7 @@
 #include <functional>
 #include <string>
 #include <appbase/application.hpp>
-#include <hb/logging_plugin/logging_plugin.h>
+#include <hb/log_plugin/log_plugin.h>
 #include <hb/send_mail_plugin/send_mail_plugin_impl.h>
 #include <hb/thread_pool_plugin/thread_pool_plugin.h>
 
@@ -25,7 +25,7 @@ namespace hb{ namespace plugin {
     };
     class send_mail_plugin : public appbase::plugin<send_mail_plugin> {
         public:
-            APPBASE_PLUGIN_REQUIRES((logging_plugin)(thread_pool_plugin))
+            APPBASE_PLUGIN_REQUIRES((log_plugin)(thread_pool_plugin))
             send_mail_plugin();
             virtual ~send_mail_plugin();
             virtual void set_program_options(options_description&, options_description&) override;

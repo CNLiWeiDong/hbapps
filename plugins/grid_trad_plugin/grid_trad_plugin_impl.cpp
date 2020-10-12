@@ -2,7 +2,7 @@
 // Created by 李卫东 on 2019-02-19.
 //
 #include <hb/grid_trad_plugin/grid_trad_plugin_impl.h>
-#include <fc/time/time.h>
+#include <hb/time/time.h>
 
 namespace hb{ namespace plugin {
         grid_trad_plugin_impl::~grid_trad_plugin_impl(){
@@ -10,14 +10,14 @@ namespace hb{ namespace plugin {
         
         void grid_trad_plugin_impl::deal_loop(){
             log_info<<"【grid_trad_plugin_impl::deal_loop】";
-            try{
+            hb_try
                 log_info<<"delvier_order  ========>>>>>>>>";
                 auto dealing_segs = delvier_order_->deal();
                 log_info<<"new_order      ========>>>>>>>>";
                 new_order_->deal(dealing_segs);
-            }catch(...){
-                log_throw("deal_loop throw:");
-            }
+            hb_catch([](const auto &e){
+                log_throw("deal_loop throw.", e);
+            })
             loop();
         }
         void grid_trad_plugin_impl::loop() {

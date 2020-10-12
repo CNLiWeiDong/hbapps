@@ -9,7 +9,7 @@
 #include <thread>
 #include <functional>
 #include <string>
-#include <fc/logging/logging.h>
+#include <hb/log/log.h>
 #include <hb/grid_db_plugin/grid_db_plugin.h>
 #include <hb/send_mail_plugin/send_mail_plugin.h>
 #include <hb/trad_api_plugin/trad_api_plugin.h>

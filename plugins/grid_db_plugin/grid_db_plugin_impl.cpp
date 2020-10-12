@@ -3,11 +3,13 @@
 //
 
 #include <hb/grid_db_plugin/grid_db_plugin_impl.h>
-#include <hb/logging_plugin/logging_plugin.h>
+#include <hb/log_plugin/log_plugin.h>
 #include <hb/mysql_plugin/mysql_plugin.h>
 #include <boost/format.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <fc/time/time.h>
+#include <hb/time/time.h>
+#include <hb/grid_db_plugin/grid_db_error.h>
+#include <hb/error/exception.h>
 
 namespace hb { namespace plugin {
     // uint64_t get_date_seconds(const string& date_str) 
@@ -33,7 +35,9 @@ namespace hb { namespace plugin {
         auto res = query.store();
         if(!res){
             close_connection(con);
-            LOG_FATAL("query_sale_tx result error! %s",sql_str.c_str());
+            grid_db_exception e;
+            e.msg("query_sale_tx result error! %s",sql_str);
+            hb_throw(e);
         }
         sale_tx_array_type arr;
         for(auto &row : res){
@@ -51,8 +55,8 @@ namespace hb { namespace plugin {
                 used_buy_amount: atof(row["used_buy_amount"]),
                 free_buy_amount: atof(row["free_buy_amount"]),
                 valid_sale_number: atof(row["valid_sale_number"]),
-                create_time: fc::timestamp(row["create_time"].c_str()),
-                update_time: fc::timestamp(row["update_time"].c_str()),
+                create_time: hb::time::timestamp(row["create_time"].c_str()),
+                update_time: hb::time::timestamp(row["update_time"].c_str()),
                 status: db_tx_order_status(atoi(row["status"])),
                 use_status: db_tx_use_status(atoi(row["use_status"]))
             };
@@ -90,7 +94,9 @@ namespace hb { namespace plugin {
         auto res = query.store();
         if(!res){
             close_connection(con);
-            LOG_FATAL("get_new_buy_array result error!");
+            grid_db_exception e;
+            e.msg("get_new_buy_array result error!");
+            hb_throw(e);
         }
         buy_tx_array_type arr;
         for(auto &row : res){
@@ -105,8 +111,8 @@ namespace hb { namespace plugin {
                 deal_price: atof(row["deal_price"]),
                 deal_fee: atof(row["deal_fee"]),
                 deal_amount: atof(row["deal_amount"]),
-                create_time: fc::timestamp(row["create_time"].c_str()),
-                update_time: fc::timestamp(row["update_time"].c_str()),
+                create_time: hb::time::timestamp(row["create_time"].c_str()),
+                update_time: hb::time::timestamp(row["update_time"].c_str()),
                 status: db_tx_order_status(atoi(row["status"]))
             };
             arr.push_back(std::move(item));
@@ -136,7 +142,9 @@ namespace hb { namespace plugin {
         auto insert_res = query.execute();
         close_connection(con);
         if(!insert_res){
-            LOG_FATAL("add_new_sale_tx error!");
+            grid_db_exception e;
+            e.msg("add_new_sale_tx error!");
+            hb_throw(e);
         }
     }
     void grid_db_plugin_impl::add_new_buy_tx(const buy_tx_type &tx){
@@ -159,7 +167,9 @@ namespace hb { namespace plugin {
         auto insert_res = query.execute();
         close_connection(con);
         if(!insert_res){
-            LOG_FATAL("add_buy_tx error!");
+            grid_db_exception e;
+            e.msg("add_buy_tx error!");
+            hb_throw(e);
         }
     }
     void update_sale_tx(mysqlpp::Query &query, const sale_tx_type &tx){
@@ -216,28 +226,34 @@ namespace hb { namespace plugin {
             self->close_connection(con);
         };
         mysqlpp::Transaction t(*con);
-        try{
+        hb_try
             auto query = con->query();
             update_sale_tx(query,tx);
             log_info<<"update_sale_tx sql:"<<query.str();
             auto update_res = query.execute();
             if(!update_res){
-                LOG_FATAL("deliver_sale_tx update sale_tx error!");
+                grid_db_exception e;
+                e.msg("deliver_sale_tx update sale_tx error!");
+                hb_throw(e);
             }
             query.reset();
             insert_sale_history(query,tx);
             log_info<<"insert_sale_history sql:"<<query.str();
             auto insert_res = query.execute();
             if(!insert_res){
-                LOG_FATAL("deliver_sale_tx insert into sale_history error!");
+                grid_db_exception e;
+                e.msg("deliver_sale_tx insert into sale_history error!");
+                hb_throw(e);
             }
             t.commit();
-        }catch (...){
+        hb_catch([&](const auto &err){
             t.rollback();
             close();
-            log_throw("deliver_sale_tx");
-            LOG_FATAL("deliver_sale_tx commit dababase error!");
-        }
+            log_throw("deliver_sale_tx", err);
+            grid_db_exception e;
+            e.msg("deliver_sale_tx commit dababase error!");
+            hb_throw(e);
+        })
         close();
     }
     void update_buy_tx(mysqlpp::Query &query, const buy_tx_type &tx){
@@ -317,7 +333,9 @@ namespace hb { namespace plugin {
             log_info<<"update_buy_status sql:"<<query.str();
             auto update_res = query.execute();
             if(!update_res){
-                LOG_FATAL("deliver_buy_tx update sale_tx  error!");
+                grid_db_exception e;
+                e.msg("deliver_buy_tx update sale_tx  error!");
+                hb_throw(e);
             }
             all_remain_amount = old_remain_amount - old_free_amount;
             if(all_remain_amount<=0){
@@ -333,19 +351,23 @@ namespace hb { namespace plugin {
         };
         mysqlpp::Transaction t(*con);
         auto query = con->query();
-        try{
+        hb_try
             update_buy_tx(query,tx);
             log_info<<"update_buy_tx sql:"<<query.str();
             auto update_res = query.execute();
             if(!update_res){
-                LOG_FATAL("deliver_buy_tx update buy_tx  error!");
+                grid_db_exception e;
+                e.msg("deliver_buy_tx update buy_tx  error!");
+                hb_throw(e);
             }
             query.reset();
             insert_buy_history(query,tx);
             log_info<<"insert_buy_history sql:"<<query.str();
             auto insert_res = query.execute();
             if(!insert_res){
-                LOG_FATAL("insert into buy_history error!");
+                grid_db_exception e;
+                e.msg("insert into buy_history error!");
+                hb_throw(e);
             }
             if((tx.status==db_tx_order_status::db_tx_portion_closed 
                     || tx.status==db_tx_order_status::db_tx_complet_closed) 
@@ -353,12 +375,14 @@ namespace hb { namespace plugin {
                 update_buy_status(query,tx);
             }
             t.commit();
-        }catch(...){
+        hb_catch([&](const auto &err) {
             t.rollback();
             close();
-            log_throw("deliver_buy_tx");
-            LOG_FATAL("deliver_buy_tx error!");
-        }
+            log_throw("deliver_buy_tx", err);
+            grid_db_exception e;
+            e.msg("deliver_buy_tx error!");
+            hb_throw(e);
+        })
         close();
     }
 } }

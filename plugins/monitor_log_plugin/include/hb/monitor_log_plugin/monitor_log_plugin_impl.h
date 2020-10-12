@@ -8,7 +8,7 @@
 #include <functional>
 #include <string>
 #include <atomic>
-#include <fc/logging/logging.h>
+#include <hb/log/log.h>
 #include <appbase/application.hpp>
 
 namespace hb{ namespace plugin {

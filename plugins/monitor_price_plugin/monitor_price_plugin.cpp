@@ -8,6 +8,7 @@
 #include <boost/filesystem.hpp> 
 #include <stdlib.h>
 #include <set>
+#include <hb/monitor_price_plugin/monitor_price_error.h>
 
 namespace hb{ namespace plugin{
         static appbase::abstract_plugin& _monitor_price_plugin = app().register_plugin<monitor_price_plugin>();
@@ -89,7 +90,9 @@ namespace hb{ namespace plugin{
                         break;
                     const string id = target->get<string>("id");
                     if(target_ids.find(id)==target_ids.end()) {
-                        LOG_FATAL("single %s is not existed in targets!", id.c_str());
+                        hb::plugin::monitor_price_exception e;
+                        e.msg("single %s is not existed in targets!", id);
+                        hb_throw(e);
                     }
                     singles_type single = {
                         id: id,
@@ -111,7 +114,9 @@ namespace hb{ namespace plugin{
                     const string id1 = target->get<string>("id1");
                     const string id2 = target->get<string>("id2");
                     if(target_ids.find(id1)==target_ids.end() || target_ids.find(id2)==target_ids.end()) {
-                        LOG_FATAL("pairs %s,%s is not existed in targets!", id1.c_str(), id2.c_str());
+                        hb::plugin::monitor_price_exception e;
+                        e.msg("pairs %s,%s is not existed in targets!", id1, id2);
+                        hb_throw(e);
                     }
                     pairs_type p = {
                         .id1 = id1,
@@ -152,17 +157,17 @@ namespace hb{ namespace plugin{
                         // boost::split(props, arg, boost::is_any_of("\t"));
                         boost::split_regex( props, arg, boost::regex( "\\|\\=\\|" ) );
                         if(props.size()<6){
-                            LOG_FATAL("monitor-all-targets-list config is error: %s", arg.c_str());
+                            hb_throw("monitor-all-targets-list config is error: %s", arg.c_str());
                         }
                         vector<string> week_vals;
                         boost::split(week_vals, props[5], boost::is_any_of("~:"));
                         if(week_vals.size()<2){
-                            LOG_FATAL("monitor-all-targets-list min and max week config is error: %s", props[5].c_str());
+                            hb_throw("monitor-all-targets-list min and max week config is error: %s", props[5].c_str());
                         }
                         vector<string> minutes_vals;
                         boost::split(minutes_vals, props[6], boost::is_any_of("~:"));
                         if(minutes_vals.size()<2){
-                            LOG_FATAL("monitor-all-targets-list min and max hours config is error: %s", props[6].c_str());
+                            hb_throw("monitor-all-targets-list min and max hours config is error: %s", props[6].c_str());
                         }
                         target_type one_target = {
                             .id = props[0],
@@ -193,15 +198,15 @@ namespace hb{ namespace plugin{
                 //         vector<string> props;
                 //         boost::split(props, arg, boost::is_any_of("\t,"));
                 //         if(props.size()<3){
-                //             LOG_FATAL("monitor-singles-list config is error: %s", arg.c_str());
+                //             hb_throw("monitor-singles-list config is error: %s", arg.c_str());
                 //         }
                 //         if(target_ids.find(props[0])==target_ids.end()) {
-                //             LOG_FATAL("single %s is not existed in targets!", props[0].c_str());
+                //             hb_throw("single %s is not existed in targets!", props[0].c_str());
                 //         }
                 //         vector<string> vals;
                 //         boost::split(vals, props[1], boost::is_any_of("~:"));
                 //         if(vals.size()<2){
-                //             LOG_FATAL("monitor-singles-list min and max value config is error: %s", props[1].c_str());
+                //             hb_throw("monitor-singles-list min and max value config is error: %s", props[1].c_str());
                 //         }
                 //         singles_type single = {
                 //             id: props[0],
@@ -223,15 +228,15 @@ namespace hb{ namespace plugin{
                 //         vector<string> props;
                 //         boost::split(props, arg, boost::is_any_of("\t,"));
                 //         if(props.size()<4){
-                //             LOG_FATAL("monitor-pairs-list config is error: %s", arg.c_str());
+                //             hb_throw("monitor-pairs-list config is error: %s", arg.c_str());
                 //         }
                 //         if(target_ids.find(props[0])==target_ids.end() || target_ids.find(props[1])==target_ids.end()) {
-                //             LOG_FATAL("pairs %s,%s is not existed in targets!", props[0].c_str(), props[1].c_str());
+                //             hb_throw("pairs %s,%s is not existed in targets!", props[0].c_str(), props[1].c_str());
                 //         }
                 //         vector<string> vals;
                 //         boost::split(vals, props[2], boost::is_any_of("~:"));
                 //         if(vals.size()<2){
-                //             LOG_FATAL("monitor-pairs-list min and max value config is error: %s", props[1].c_str());
+                //             hb_throw("monitor-pairs-list min and max value config is error: %s", props[1].c_str());
                 //         }
                 //         pairs_type p = {
                 //             .id1 = props[0],

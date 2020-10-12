@@ -37,7 +37,6 @@ apt update && apt install -y \
     libssl-dev          \
     curl                \
     libcurl4-openssl-dev \
-    libcrypto++-dev \
     zlib1g-dev
 
 update-alternatives --install /usr/bin/clang clang /usr/bin/clang-8 100
@@ -70,6 +69,18 @@ cd cmake-3.14.5
 ./bootstrap --parallel=10
 make -j10
 make -j10 install
+```
+
+# Install crypto++
+```
+mkdir tmp && cd tmp
+git clone https://github.com/weidai11/cryptopp.git
+git clone https://github.com/noloader/cryptopp-pem.git
+cp cryptopp-pem/* cryptopp/
+cd cryptopp
+make distclean
+make -j 9
+make install
 ```
 
 # Install mysql++

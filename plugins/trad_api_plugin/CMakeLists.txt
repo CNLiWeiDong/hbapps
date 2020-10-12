@@ -30,8 +30,8 @@ target_include_directories( trad_api_plugin
 target_link_libraries( trad_api_plugin
         ${Curl_LIBRARIES}
         appbase
-        fc
-        logging_plugin
+        hb
+        log_plugin
         # idn
         )
 

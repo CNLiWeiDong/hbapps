@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE trad_api_test
 #include <boost/test/unit_test.hpp>
 #include <boost/thread/thread.hpp>
-#include <fc/logging/logging.h>
+#include <hb/log/log.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <hb/trad_api_plugin/trad_api_plugin_impl.h>
 #include <memory>
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(get_price) try {
     BOOST_CHECK_EQUAL(price_result.status, true);
     boost::thread::sleep(boost::get_system_time() + boost::posix_time::seconds(1));
 } catch (...) {
-    log_throw("get_price");
+    log_throw("get_price", nullptr);
     BOOST_FAIL("get_price error!");
 };
 // get_account
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(get_account) try {
     BOOST_CHECK_EQUAL(account_id, "1197869");
     boost::thread::sleep(boost::get_system_time() + boost::posix_time::seconds(1));
 } catch (...) {
-    log_throw("get_account");
+    log_throw("get_account", nullptr);
     BOOST_FAIL("get_account error!");
 };
 
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(new_sale_order) try {
     log_info<<"new_order_id:"<<new_order_id;
     boost::thread::sleep(boost::get_system_time() + boost::posix_time::seconds(1));
 } catch (...) {
-    log_throw("new_sale_order");
+    log_throw("new_sale_order", nullptr);
     BOOST_FAIL("new_sale_order error!");
 };
 // // query_order_id_by_client
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(get_order_status) try {
     log_info<<"fee:"<<order_status.fee;
     boost::thread::sleep(boost::get_system_time() + boost::posix_time::seconds(1));
 } catch (...) {
-    log_throw("get_order_status");
+    log_throw("get_order_status", nullptr);
     BOOST_FAIL("get_order_status error!");
 };
 // cancell_order
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(cancell_order) try {
     log_info<<"cancell_order>>>>>>>>>>";
     my->cancell_order(new_order_id);
 } catch (...) {
-    log_throw("cancell_order");
+    log_throw("cancell_order", nullptr);
     BOOST_FAIL("cancell_order error!");
 };
 

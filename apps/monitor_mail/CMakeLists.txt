@@ -13,7 +13,7 @@ target_include_directories(monitor_mail
 target_link_libraries(monitor_mail
         PRIVATE appbase
         PRIVATE ${Boost_LIBRARIES} #boost test
-        PRIVATE -Wl,${whole_archive_flag} logging_plugin                        -Wl,${no_whole_archive_flag}
+        PRIVATE -Wl,${whole_archive_flag} log_plugin                        -Wl,${no_whole_archive_flag}
         PRIVATE -Wl,${whole_archive_flag} monitor_mail_plugin                   -Wl,${no_whole_archive_flag}
         PRIVATE -Wl,${whole_archive_flag} send_mail_plugin                      -Wl,${no_whole_archive_flag}
         )

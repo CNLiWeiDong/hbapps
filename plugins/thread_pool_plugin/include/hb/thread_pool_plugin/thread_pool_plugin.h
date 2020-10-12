@@ -9,7 +9,7 @@
 #include <thread>
 #include <functional>
 #include <string>
-#include <hb/logging_plugin/logging_plugin.h>
+#include <hb/log_plugin/log_plugin.h>
 #include <appbase/application.hpp>
 #include <hb/thread_pool_plugin/thread_pool_plugin_impl.h>
 
@@ -35,7 +35,7 @@ namespace hb{ namespace plugin {
     };
     class thread_pool_plugin : public appbase::plugin<thread_pool_plugin> {
         public:
-            APPBASE_PLUGIN_REQUIRES((logging_plugin))
+            APPBASE_PLUGIN_REQUIRES((log_plugin))
             thread_pool_plugin();
             virtual ~thread_pool_plugin();
             virtual void set_program_options(options_description&, options_description&) override;

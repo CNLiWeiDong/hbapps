@@ -13,6 +13,6 @@ target_include_directories(trader
 target_link_libraries(trader
         PRIVATE appbase
         PRIVATE ${Boost_LIBRARIES} #boost test
-        PRIVATE -Wl,${whole_archive_flag} logging_plugin                        -Wl,${no_whole_archive_flag}
+        PRIVATE -Wl,${whole_archive_flag} log_plugin                        -Wl,${no_whole_archive_flag}
         PRIVATE -Wl,${whole_archive_flag} grid_trad_plugin                      -Wl,${no_whole_archive_flag}
         )

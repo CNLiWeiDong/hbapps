@@ -10,7 +10,7 @@
 #include <thread>
 #include <functional>
 #include <string>
-#include <fc/logging/logging.h>
+#include <hb/log/log.h>
 
 using namespace std;
 
@@ -22,14 +22,13 @@ namespace hb{ namespace plugin {
             shared_ptr<boost::asio::io_service> get_io_service() { return _io_service; }
             void post(const string &task_name,const function<void()> &task){
                 _io_service->post([=]()mutable throw(){
-                    try {
+                    hb_try
                         log_info<<"begin do thread pool work, task name:"<<task_name;
                         task();
                         log_info<<"end do thread pool work, task name:"<<task_name;
-                    }catch(...){
-                        LOG_ERROR("do thread pool work error:%s", task_name.c_str());
-                        log_throw(task_name.c_str());
-                    }
+                    hb_catch([&](const auto &e){
+                        log_throw("do thread pool task " + task_name, e);
+                    })
                 });
             }
             template <typename T, typename  C>
@@ -37,14 +36,13 @@ namespace hb{ namespace plugin {
                       const T &task,
                       const C &callback){
                 _io_service->post([=]()mutable throw(){
-                    try {
+                    hb_try
                         log_info<<"begin do thread pool work, task name:"<<task_name;
                         callback(task());
                         log_info<<"end do thread pool work, task name:"<<task_name;
-                    }catch(...){
-                        LOG_ERROR("do thread pool work error:%s",task_name.c_str());
-                        log_throw(task_name.c_str());
-                    }
+                    hb_catch([&](const auto &e){
+                        log_throw("do thread pool task " + task_name, e);
+                    })
                 });
             }
             template <typename T, typename  C>
@@ -52,7 +50,7 @@ namespace hb{ namespace plugin {
                       const T &task,
                       const C &callback){
                 _io_service->post([=,&main_io_server]()mutable throw(){
-                    try {
+                    hb_try
                         log_info<<"begin do thread pool work, task name:"<<task_name;
                         // callback(task());
                         auto r = task();
@@ -63,10 +61,9 @@ namespace hb{ namespace plugin {
                             callback(r);
                         });
                         log_info<<"end do thread pool work, task name:"<<task_name;
-                    }catch(...){
-                        LOG_ERROR("do thread pool work error:%s",task_name.c_str());
-                        log_throw(task_name.c_str());
-                    }
+                    hb_catch([&](const auto &e){
+                        log_throw("do thread pool task " + task_name, e);
+                    })
                 });
             }
         private:

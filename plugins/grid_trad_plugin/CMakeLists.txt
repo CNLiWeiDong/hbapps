@@ -18,8 +18,8 @@ target_include_directories( grid_trad_plugin
 
 target_link_libraries( grid_trad_plugin
         appbase
-        fc
-        logging_plugin
+        hb
+        log_plugin
         grid_db_plugin
         send_mail_plugin
         trad_api_plugin

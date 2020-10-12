@@ -10,10 +10,11 @@
 #include <thread>
 #include <functional>
 #include <string>
-#include <fc/logging/logging.h>
+#include <hb/log/log.h>
 #include <hb/grid_db_plugin/grid_db_plugin.h>
 #include <hb/send_mail_plugin/send_mail_plugin.h>
 #include <hb/trad_api_plugin/trad_api_plugin.h>
+#include <hb/grid_trad_plugin/grid_trad_error.h>
 #include <boost/asio.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -35,7 +36,9 @@ namespace hb{ namespace plugin {
             auto iter = tactics_.find(item.seg_id);
             if(iter != tactics_.end())
             {
-                LOG_FATAL("%s tactic already existed!", item.seg_id.c_str());
+                grid_trad_exception e;
+                e.msg("%s tactic already existed!", item.seg_id);
+                hb_throw(e);
             }
             tactics_.insert(decltype(tactics_)::value_type(item.seg_id,std::move(item)));
         }
